@@ -35,7 +35,8 @@ public final class Lexer {
     {
         List<Token> tokens = new ArrayList<>();
         //while(chars.has(0))
-        while(chars.index < chars.input.length())
+        while(chars.index <= chars.input.length())
+        //while(peek("."))
         {
             if(peek("[^ \b\n\r\t]")) // if its not whitespace
             {
@@ -82,7 +83,6 @@ public final class Lexer {
         }
         else if(peek("\\\\")) // escape
         {
-
             lexEscape();
         }
         else
@@ -95,9 +95,9 @@ public final class Lexer {
     public Token lexIdentifier() {
         if(match("[A-Za-z_]"))
         {
-            while(peek("[A-Za-z0-9_]"))
+            while(peek("[A-Za-z0-9_-]"))
             {
-                match("[A-Za-z0-9_]");
+                match("[A-Za-z0-9_-]");
             }
         }
         return chars.emit(Token.Type.IDENTIFIER);
@@ -105,7 +105,7 @@ public final class Lexer {
 
     public Token lexNumber()
     {
-        chars.advance();
+        match("[+-]");
         while(peek("[0-9]"))
         {
             match("[0-9]");
@@ -156,6 +156,10 @@ public final class Lexer {
         match("\"");
         while(match("[^\"]") && chars.has(1))
         {
+            if(peek("[\n\r]"))
+            {
+                throw new ParseException("invalid escape", chars.index);
+            }
             if(match("\\\\"))
             {
                 if(!match("[bnrt'\"\\\\]"))
@@ -174,17 +178,28 @@ public final class Lexer {
         }
     }
 
-    public void lexEscape() {
-        System.out.println("fuck");
-        chars.advance();
+    public void lexEscape()
+    {
+        if (match("\\\\"))
+        {
+            if (match("[bnrt\'\"\\\\]"))
+            {
+                return;
+            }
+        }
+        throw new ParseException("Invalid Escape", chars.index);
     }
 
     public Token lexOperator()
     {
 
-        if (match("<"))
+        if (match("[<>!=]"))
         {
             if (match("="))
+            {
+                return chars.emit(Token.Type.OPERATOR);
+            }
+            else
             {
                 return chars.emit(Token.Type.OPERATOR);
             }
