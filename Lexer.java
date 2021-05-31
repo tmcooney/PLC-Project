@@ -1,6 +1,5 @@
 package plc.project;
 
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -153,11 +152,12 @@ public final class Lexer {
     public Token lexString()
     {
         match("\"");
-        while(match("[^\"]") && chars.has(1))
+        while(match("[^\"]") && chars.has(0))
         {
             if(peek("[\n\r]"))
             {
                 throw new ParseException("invalid escape", chars.index);
+
             }
             if(match("\\\\"))
             {
@@ -173,7 +173,7 @@ public final class Lexer {
         }
         else
         {
-            throw new ParseException("invalid string", chars.index + 1);
+            throw new ParseException("invalid string", chars.index);
         }
     }
 
