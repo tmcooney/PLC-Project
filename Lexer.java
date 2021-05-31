@@ -152,12 +152,11 @@ public final class Lexer {
     public Token lexString()
     {
         match("\"");
-        while(match("[^\"]") && chars.has(0))
+        while(match("[^\"\n\r]"))
         {
-            if(peek("[\n\r]"))
+            if(match("[\n\r]"))
             {
                 throw new ParseException("invalid escape", chars.index);
-
             }
             if(match("\\\\"))
             {
