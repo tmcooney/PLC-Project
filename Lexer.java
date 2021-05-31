@@ -108,9 +108,9 @@ public final class Lexer {
         {
             match("[0-9]");
         }
-        if(peek(".", "[0-9]"))
+        if(peek("\\.", "[0-9]"))
         {
-            if(match("."))
+            if(match("\\."))
             {
                 while(peek("[0-9]"))
                 {
