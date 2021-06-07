@@ -1,6 +1,7 @@
 package plc.project;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * The parser takes the sequence of tokens emitted by the lexer and turns that
@@ -28,7 +29,7 @@ public final class Parser {
      */
     public Ast.Source parseSource() throws ParseException
     {
-        
+
         throw new UnsupportedOperationException(); //TODO
     }
 
@@ -106,7 +107,8 @@ public final class Parser {
      * Parses the {@code expression} rule.
      */
     public Ast.Expr parseExpression() throws ParseException {
-        throw new UnsupportedOperationException(); //TODO
+        //throw new UnsupportedOperationException(); //TODO
+        return parsePrimaryExpression();
     }
 
     /**
@@ -151,7 +153,33 @@ public final class Parser {
      * not strictly necessary.
      */
     public Ast.Expr parsePrimaryExpression() throws ParseException {
-        throw new UnsupportedOperationException(); //TODO
+        //throw new UnsupportedOperationException(); //TODO
+        if(match("TRUE"))
+        {
+            return new Ast.Expr.Literal(true);
+        }
+        else if(match(Token.Type.IDENTIFIER)) //variable
+        {
+            String name = tokens.get(-1).getLiteral();
+            // TODO: handle function case if next token is '('
+            return new Ast.Expr.Access(Optional.empty(), name);
+            // obj.method() obj is receiver "Alan Kay message passing"
+        }
+        else if(match("(")) // grouped expression
+        {
+            Ast.Expr expr = parseExpression();
+            if(!match(")")) // if we don't find closing paren
+            {
+                throw new ParseException("Expected closing parenthesis.", -1);
+                // TODO: "include character index position from the token to return instead of -1"
+            }
+            return new Ast.Expr.Group(expr);
+        }
+        else
+        {
+            throw new ParseException("Invalid primary expression.", -1);
+            // TODO: handle actual character index instead of -1
+        }
     }
 
     /**
@@ -165,7 +193,33 @@ public final class Parser {
      * {@code peek(Token.Type.IDENTIFIER)} and {@code peek("literal")}.
      */
     private boolean peek(Object... patterns) {
-        throw new UnsupportedOperationException(); //TODO (in lecture)
+        //throw new UnsupportedOperationException(); //TODO (in lecture)
+        for (int i = 0; i < patterns.length; i++)
+        {
+            if (!tokens.has(i))
+            {
+                return false;
+            }
+            else if(patterns[i] instanceof Token.Type)
+            {
+                if(patterns[i] != tokens.get(i).getType())
+                {
+                    return false;
+                }
+            }
+            else if(patterns[i] instanceof String)
+            {
+                if(!patterns[i].equals(tokens.get(i).getLiteral()))
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                throw new AssertionError("Invalid pattern object: " + patterns[i].getClass());
+            }
+        }
+        return true;
     }
 
     /**
@@ -173,7 +227,16 @@ public final class Parser {
      * and advances the token stream.
      */
     private boolean match(Object... patterns) {
-        throw new UnsupportedOperationException(); //TODO (in lecture)
+        //throw new UnsupportedOperationException(); //TODO (in lecture)
+        boolean peek = peek(patterns);
+        if(peek)
+        {
+            for(int i = 0; i < patterns.length; i++)
+            {
+                tokens.advance();
+            }
+        }
+        return peek;
     }
 
     private static final class TokenStream {
