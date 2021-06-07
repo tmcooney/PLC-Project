@@ -110,42 +110,79 @@ public final class Parser {
      */
     public Ast.Expr parseExpression() throws ParseException {
         //throw new UnsupportedOperationException(); //TODO
-        return parsePrimaryExpression();
+        //return parsePrimaryExpression();
+        return parseLogicalExpression();
     }
 
     /**
      * Parses the {@code logical-expression} rule.
      */
     public Ast.Expr parseLogicalExpression() throws ParseException {
-        throw new UnsupportedOperationException(); //TODO
+        //throw new UnsupportedOperationException(); //TODO
+        Ast.Expr expr = parseEqualityExpression();
+        while(match("AND", "OR"))
+        {
+            String operator = tokens.get(-1).getLiteral();
+            Ast.Expr right = parseEqualityExpression();
+            expr = new Ast.Expr.Binary(operator, expr, right);
+        }
+        return expr;
     }
 
     /**
      * Parses the {@code equality-expression} rule.
      */
     public Ast.Expr parseEqualityExpression() throws ParseException {
-        throw new UnsupportedOperationException(); //TODO
+        //throw new UnsupportedOperationException(); //TODO
+        Ast.Expr expr = parseAdditiveExpression();
+        while(match("<", "<=", ">", ">=", "==", "!="))
+        {
+            String operator = tokens.get(-1).getLiteral();
+            Ast.Expr right = parseAdditiveExpression();
+            expr = new Ast.Expr.Binary(operator, expr, right);
+        }
+        return expr;
     }
 
     /**
      * Parses the {@code additive-expression} rule.
      */
     public Ast.Expr parseAdditiveExpression() throws ParseException {
-        throw new UnsupportedOperationException(); //TODO
+        //throw new UnsupportedOperationException(); //TODO
+        Ast.Expr expr = parseMultiplicativeExpression();
+        while (match("+", "-"))
+        {
+            String operator = tokens.get(-1).getLiteral();
+            Ast.Expr right = parseMultiplicativeExpression();
+            expr = new Ast.Expr.Binary(operator, expr, right);
+        }
+        return expr;
     }
 
     /**
      * Parses the {@code multiplicative-expression} rule.
      */
     public Ast.Expr parseMultiplicativeExpression() throws ParseException {
-        throw new UnsupportedOperationException(); //TODO
+        //throw new UnsupportedOperationException(); //TODO
+        Ast.Expr expr = parseSecondaryExpression();
+        while(match("*", "/"))
+        {
+            String operator = tokens.get(-1).getLiteral();
+            Ast.Expr right = parseSecondaryExpression();
+            expr = new Ast.Expr.Binary(operator, expr, right);
+        }
+        return expr;
     }
 
     /**
      * Parses the {@code secondary-expression} rule.
      */
     public Ast.Expr parseSecondaryExpression() throws ParseException {
-        throw new UnsupportedOperationException(); //TODO
+        //throw new UnsupportedOperationException(); //TODO
+        Ast.Expr expr = parsePrimaryExpression();
+
+        return expr;
+
     }
 
     /**
@@ -267,7 +304,6 @@ public final class Parser {
      * and advances the token stream.
      */
     private boolean match(Object... patterns) {
-        //throw new UnsupportedOperationException(); //TODO (in lecture)
         boolean peek = peek(patterns);
         if(peek)
         {
