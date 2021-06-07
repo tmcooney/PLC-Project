@@ -158,6 +158,14 @@ public final class Parser {
         {
             return new Ast.Expr.Literal(true);
         }
+        else if(match("FALSE"))
+        {
+            return new Ast.Expr.Literal(false);
+        }
+        else if(match("NIL"))
+        {
+            return new Ast.Expr.Literal(null);
+        }
         else if(match(Token.Type.IDENTIFIER)) //variable
         {
             String name = tokens.get(-1).getLiteral();
