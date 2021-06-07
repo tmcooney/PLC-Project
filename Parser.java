@@ -1,5 +1,7 @@
 package plc.project;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.List;
 import java.util.Optional;
 
@@ -166,6 +168,36 @@ public final class Parser {
         {
             return new Ast.Expr.Literal(null);
         }
+        else if(match(Token.Type.INTEGER))
+        {
+            BigInteger integer = new BigInteger(tokens.get(-1).getLiteral());
+            return new Ast.Expr.Literal(integer);
+        }
+        else if(match(Token.Type.DECIMAL))
+        {
+            BigDecimal bigDecimal = new BigDecimal(tokens.get(-1).getLiteral());
+            return new Ast.Expr.Literal(bigDecimal);
+        }
+        else if(match(Token.Type.CHARACTER))
+        {
+            String charString = tokens.get(-1).getLiteral();
+            charString = charString.replace("\'","" );
+            char newChar = charString.charAt(0);
+            return new Ast.Expr.Literal(newChar);
+        }
+        else if(match(Token.Type.STRING))
+        {
+            String newString = tokens.get(-1).getLiteral();
+            newString = newString.replace("\"", "");
+            newString = newString.replace("\\b", "\b");
+            newString = newString.replace("\\n", "\n");
+            newString = newString.replace("\\r", "\r");
+            newString = newString.replace("\\t", "\t");
+            newString = newString.replace("\\'", "\'");
+            newString = newString.replace("\\\"", "\"");
+            newString = newString.replace("\\\\", "\\");
+            return new Ast.Expr.Literal(newString);
+        }
         else if(match(Token.Type.IDENTIFIER)) //variable
         {
             String name = tokens.get(-1).getLiteral();
@@ -178,7 +210,7 @@ public final class Parser {
             Ast.Expr expr = parseExpression();
             if(!match(")")) // if we don't find closing paren
             {
-                throw new ParseException("Expected closing parenthesis.", -1);
+                throw new ParseException("Expected closing parenthesis.", tokens.index);
                 // TODO: "include character index position from the token to return instead of -1"
             }
             return new Ast.Expr.Group(expr);
