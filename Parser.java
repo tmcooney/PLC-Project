@@ -120,7 +120,7 @@ public final class Parser {
     public Ast.Expr parseLogicalExpression() throws ParseException {
         //throw new UnsupportedOperationException(); //TODO
         Ast.Expr expr = parseEqualityExpression();
-        while(match("AND", "OR"))
+        while(match("AND") || match("OR"))
         {
             String operator = tokens.get(-1).getLiteral();
             Ast.Expr right = parseEqualityExpression();
@@ -135,7 +135,7 @@ public final class Parser {
     public Ast.Expr parseEqualityExpression() throws ParseException {
         //throw new UnsupportedOperationException(); //TODO
         Ast.Expr expr = parseAdditiveExpression();
-        while(match("<", "<=", ">", ">=", "==", "!="))
+        while(match("<") || match("<=") || match(">") || match(">=") || match("==") || match("!="))
         {
             String operator = tokens.get(-1).getLiteral();
             Ast.Expr right = parseAdditiveExpression();
@@ -150,7 +150,7 @@ public final class Parser {
     public Ast.Expr parseAdditiveExpression() throws ParseException {
         //throw new UnsupportedOperationException(); //TODO
         Ast.Expr expr = parseMultiplicativeExpression();
-        while (match("+", "-"))
+        while (match("+") || match("-"))
         {
             String operator = tokens.get(-1).getLiteral();
             Ast.Expr right = parseMultiplicativeExpression();
@@ -165,7 +165,7 @@ public final class Parser {
     public Ast.Expr parseMultiplicativeExpression() throws ParseException {
         //throw new UnsupportedOperationException(); //TODO
         Ast.Expr expr = parseSecondaryExpression();
-        while(match("*", "/"))
+        while(match("*") || match("/"))
         {
             String operator = tokens.get(-1).getLiteral();
             Ast.Expr right = parseSecondaryExpression();
@@ -181,6 +181,13 @@ public final class Parser {
         //throw new UnsupportedOperationException(); //TODO
         Ast.Expr expr = parsePrimaryExpression();
 
+        while(match("."))
+        {
+            if(match(Token.Type.IDENTIFIER))
+            {
+                expr = parsePrimaryExpression();
+            }
+        }
         return expr;
 
     }
@@ -239,8 +246,12 @@ public final class Parser {
         {
             String name = tokens.get(-1).getLiteral();
             // TODO: handle function case if next token is '('
-            return new Ast.Expr.Access(Optional.empty(), name);
-            // obj.method() obj is receiver "Alan Kay message passing"
+            if(match("("))
+            {
+
+            }
+            return new Ast.Expr.Access(Optional.empty(), name); // obj.method() obj is receiver "Alan Kay message passing"
+
         }
         else if(match("(")) // grouped expression
         {
