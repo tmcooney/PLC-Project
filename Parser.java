@@ -2,6 +2,8 @@ package plc.project;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -57,7 +59,21 @@ public final class Parser {
      * statement, then it is an expression/assignment statement.
      */
     public Ast.Stmt parseStatement() throws ParseException {
-        throw new UnsupportedOperationException(); //TODO
+        //throw new UnsupportedOperationException(); //TODO
+        Ast.Stmt.Expr receiver = parseExpression();
+        if (match("="))
+        {
+            Ast.Expr value = parseExpression();
+            if(match(";"))
+            {
+                return new Ast.Stmt.Assignment(receiver, value);
+            }
+        }
+        else if (match(";"))
+        {
+            return new Ast.Stmt.Expression(receiver);
+        }
+        throw new ParseException("Missing semi-colon.", tokens.index);
     }
 
     /**
@@ -178,13 +194,23 @@ public final class Parser {
      * Parses the {@code secondary-expression} rule.
      */
     public Ast.Expr parseSecondaryExpression() throws ParseException {
-        //throw new UnsupportedOperationException(); //TODO
         Ast.Expr expr = parsePrimaryExpression();
 
         while(match("."))
         {
             if(match(Token.Type.IDENTIFIER))
             {
+                String methodName = tokens.get(-1).getLiteral();
+                List <Ast.Expr> exprs;
+                exprs = Arrays.asList();
+                if(match("("))
+                {
+                    if(match(")")) // if the parenthesis are empty
+                    {
+                        return new Ast.Expr.Function(Optional.of(expr), methodName ,exprs);
+                    }
+                    exprs.add(parseExpression());
+                }
                 return new Ast.Expr.Access(Optional.of(expr), tokens.get(-1).getLiteral());
             }
         }
@@ -243,25 +269,33 @@ public final class Parser {
         }
         else if(match(Token.Type.IDENTIFIER)) //variable
         {
-            String name = tokens.get(-1).getLiteral();
-            // TODO: handle function case if next token is '('
-            if(match("("))
+            String functionName = tokens.get(-1).getLiteral();
+
+            if(match("(")) // TODO: handle function case if next token is '('
             {
-                Ast.Expr expr = parseExpression();
+                List <Ast.Expr> exprs;
+                exprs = Arrays.asList();
+                if(match(")")) // if the parenthesis are empty
+                {
+
+                    return new Ast.Expr.Function(Optional.empty(), functionName, exprs);
+                }
+                exprs = new ArrayList<>(exprs);
+                exprs.add(parseExpression());
                 while(match(","))
                 {
-                    expr = parseExpression();
+                    exprs.add(parseExpression());
                 }
-                if(match(")"))
+                if(match(")")) // if the parenthesis are not empty
                 {
-                    return new Ast.Expr.Access(Optional.of(expr), name);
+                    return new Ast.Expr.Function(Optional.empty(), functionName, exprs);
                 }
                 else
                 {
                     throw new ParseException("Missing closing paren.", tokens.index);
                 }
             }
-            return new Ast.Expr.Access(Optional.empty(), name); // obj.method() obj is receiver "Alan Kay message passing"
+            return new Ast.Expr.Access(Optional.empty(), functionName); // obj.method() obj is receiver "Alan Kay message passing"
 
         }
         else if(match("(")) // grouped expression
