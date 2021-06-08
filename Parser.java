@@ -185,7 +185,7 @@ public final class Parser {
         {
             if(match(Token.Type.IDENTIFIER))
             {
-                expr = parsePrimaryExpression();
+                return new Ast.Expr.Access(Optional.of(expr), tokens.get(-1).getLiteral());
             }
         }
         return expr;
@@ -199,7 +199,6 @@ public final class Parser {
      * not strictly necessary.
      */
     public Ast.Expr parsePrimaryExpression() throws ParseException {
-        //throw new UnsupportedOperationException(); //TODO
         if(match("TRUE"))
         {
             return new Ast.Expr.Literal(true);
@@ -248,7 +247,19 @@ public final class Parser {
             // TODO: handle function case if next token is '('
             if(match("("))
             {
-
+                Ast.Expr expr = parseExpression();
+                while(match(","))
+                {
+                    expr = parseExpression();
+                }
+                if(match(")"))
+                {
+                    return new Ast.Expr.Access(Optional.of(expr), name);
+                }
+                else
+                {
+                    throw new ParseException("Missing closing paren.", tokens.index);
+                }
             }
             return new Ast.Expr.Access(Optional.empty(), name); // obj.method() obj is receiver "Alan Kay message passing"
 
