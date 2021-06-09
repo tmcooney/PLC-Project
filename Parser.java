@@ -211,7 +211,19 @@ public final class Parser {
                     }
                     exprs.add(parseExpression());
                 }
-                return new Ast.Expr.Access(Optional.of(expr), tokens.get(-1).getLiteral());
+                if(Character.isLetter(tokens.get(-1).getLiteral().charAt(0)))
+                {
+                    return new Ast.Expr.Access(Optional.of(expr), tokens.get(-1).getLiteral());
+                }
+                else
+                {
+                    throw new ParseException("Invalid Identifier.", tokens.get(-1).getIndex());
+                }
+
+            }
+            else
+            {
+                throw new ParseException("Invalid Identifier.", tokens.get(-1).getIndex());
             }
         }
         return expr;
@@ -303,14 +315,16 @@ public final class Parser {
             Ast.Expr expr = parseExpression();
             if(!match(")")) // if we don't find closing paren
             {
-                throw new ParseException("Expected closing parenthesis.", tokens.index);
+                int index = (tokens.get(-1).getIndex() + tokens.get(-1).getLiteral().length());
+
+                throw new ParseException("Expected closing parenthesis.", index);
                 // TODO: "include character index position from the token to return instead of -1"
             }
             return new Ast.Expr.Group(expr);
         }
         else
         {
-            throw new ParseException("Invalid primary expression.", -1);
+            throw new ParseException("Invalid primary expression.", (tokens.get(-1).getIndex() + tokens.get(-1).getLiteral().length()));
             // TODO: handle actual character index instead of -1
         }
     }
