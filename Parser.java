@@ -324,7 +324,6 @@ public final class Parser {
         }
         else
         {
-            System.out.println(" index: " + (tokens.get(0).getIndex()));
             throw new ParseException("Invalid primary expression.", (tokens.get(0).getIndex() + tokens.get(0).getLiteral().length()));
 
             // TODO: handle actual character index instead of -1
