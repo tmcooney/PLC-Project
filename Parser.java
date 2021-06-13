@@ -301,7 +301,8 @@ public final class Parser {
                 }
                 else
                 {
-                    throw new ParseException("Missing closing paren.", tokens.index);
+                    int index = (tokens.get(-1).getIndex() + tokens.get(-1).getLiteral().length());
+                    throw new ParseException("Missing closing paren.", index);
                 }
             }
             return new Ast.Expr.Access(Optional.empty(), functionName); // obj.method() obj is receiver "Alan Kay message passing"
