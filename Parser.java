@@ -125,8 +125,6 @@ public final class Parser {
      * Parses the {@code expression} rule.
      */
     public Ast.Expr parseExpression() throws ParseException {
-        //throw new UnsupportedOperationException(); //TODO
-        //return parsePrimaryExpression();
         return parseLogicalExpression();
     }
 
@@ -134,7 +132,6 @@ public final class Parser {
      * Parses the {@code logical-expression} rule.
      */
     public Ast.Expr parseLogicalExpression() throws ParseException {
-        //throw new UnsupportedOperationException(); //TODO
         Ast.Expr expr = parseEqualityExpression();
         while(match("AND") || match("OR"))
         {
@@ -211,7 +208,7 @@ public final class Parser {
                     }
                     exprs.add(parseExpression());
                 }
-                if(Character.isLetter(tokens.get(-1).getLiteral().charAt(0)))
+                if(Character.isLetter(tokens.get(-1).getLiteral().charAt(0)) || tokens.get(-1).getLiteral().charAt(0) == '_')
                 {
                     return new Ast.Expr.Access(Optional.of(expr), tokens.get(-1).getLiteral());
                 }
