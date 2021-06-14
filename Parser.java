@@ -136,8 +136,16 @@ public final class Parser {
         while(match("AND") || match("OR"))
         {
             String operator = tokens.get(-1).getLiteral();
-            Ast.Expr right = parseEqualityExpression();
-            expr = new Ast.Expr.Binary(operator, expr, right);
+            if(tokens.has(0))
+            {
+                Ast.Expr right = parseEqualityExpression();
+                expr = new Ast.Expr.Binary(operator, expr, right);
+            }
+            else
+            {
+                throw new ParseException("Missing Operand",tokens.get(-1).getIndex() + tokens.get(-1).getLiteral().length());
+            }
+
         }
         return expr;
     }
@@ -146,13 +154,19 @@ public final class Parser {
      * Parses the {@code equality-expression} rule.
      */
     public Ast.Expr parseEqualityExpression() throws ParseException {
-        //throw new UnsupportedOperationException(); //TODO
         Ast.Expr expr = parseAdditiveExpression();
         while(match("<") || match("<=") || match(">") || match(">=") || match("==") || match("!="))
         {
             String operator = tokens.get(-1).getLiteral();
-            Ast.Expr right = parseAdditiveExpression();
-            expr = new Ast.Expr.Binary(operator, expr, right);
+            if(tokens.has(0))
+            {
+                Ast.Expr right = parseAdditiveExpression();
+                expr = new Ast.Expr.Binary(operator, expr, right);
+            }
+            else
+            {
+                throw new ParseException("Missing Operand",tokens.get(-1).getIndex() + tokens.get(-1).getLiteral().length());
+            }
         }
         return expr;
     }
@@ -161,13 +175,19 @@ public final class Parser {
      * Parses the {@code additive-expression} rule.
      */
     public Ast.Expr parseAdditiveExpression() throws ParseException {
-        //throw new UnsupportedOperationException(); //TODO
         Ast.Expr expr = parseMultiplicativeExpression();
         while (match("+") || match("-"))
         {
             String operator = tokens.get(-1).getLiteral();
-            Ast.Expr right = parseMultiplicativeExpression();
-            expr = new Ast.Expr.Binary(operator, expr, right);
+            if(tokens.has(0))
+            {
+                Ast.Expr right = parseMultiplicativeExpression();
+                expr = new Ast.Expr.Binary(operator, expr, right);
+            }
+            else
+            {
+                throw new ParseException("Missing Operand", tokens.get(-1).getIndex() + tokens.get(-1).getLiteral().length());
+            }
         }
         return expr;
     }
@@ -176,13 +196,19 @@ public final class Parser {
      * Parses the {@code multiplicative-expression} rule.
      */
     public Ast.Expr parseMultiplicativeExpression() throws ParseException {
-        //throw new UnsupportedOperationException(); //TODO
         Ast.Expr expr = parseSecondaryExpression();
         while(match("*") || match("/"))
         {
             String operator = tokens.get(-1).getLiteral();
-            Ast.Expr right = parseSecondaryExpression();
-            expr = new Ast.Expr.Binary(operator, expr, right);
+            if(tokens.has(0))
+            {
+                Ast.Expr right = parseSecondaryExpression();
+                expr = new Ast.Expr.Binary(operator, expr, right);
+            }
+            else
+            {
+                throw new ParseException("Missing Operand", tokens.get(-1).getIndex() + tokens.get(-1).getLiteral().length());
+            }
         }
         return expr;
     }
@@ -202,18 +228,27 @@ public final class Parser {
                 exprs = Arrays.asList();
                 if(match("("))
                 {
+
+
                     if(match(")")) // if the parenthesis are empty
                     {
                         return new Ast.Expr.Function(Optional.of(expr), methodName ,exprs);
                     }
-                    exprs.add(parseExpression());
+                    exprs = new ArrayList<>(exprs);
+                    while(!match(")"))
+                    {
+
+                        exprs.add(parseExpression());
+                    }
                 }
                 if(Character.isLetter(tokens.get(-1).getLiteral().charAt(0)) || tokens.get(-1).getLiteral().charAt(0) == '_')
                 {
-                    return new Ast.Expr.Access(Optional.of(expr), tokens.get(-1).getLiteral());
+
+                    expr = new Ast.Expr.Access(Optional.of(expr), tokens.get(-1).getLiteral());
                 }
                 else
                 {
+
                     throw new ParseException("Invalid Identifier.", tokens.get(-1).getIndex());
                 }
 
@@ -260,13 +295,21 @@ public final class Parser {
         {
             String charString = tokens.get(-1).getLiteral();
             charString = charString.replace("\'","" );
+            charString = charString.replace("\"", "");
+            charString = charString.replace("\\b", "\b");
+            charString = charString.replace("\\n", "\n");
+            charString = charString.replace("\\r", "\r");
+            charString = charString.replace("\\t", "\t");
+            charString = charString.replace("\\'", "\'");
+            charString = charString.replace("\\\"", "\"");
+            charString = charString.replace("\\\\", "\\");
             char newChar = charString.charAt(0);
             return new Ast.Expr.Literal(newChar);
         }
         else if(match(Token.Type.STRING))
         {
             String newString = tokens.get(-1).getLiteral();
-            newString = newString.replace("\"", "");
+            newString = newString.substring(1, newString.length() - 1);
             newString = newString.replace("\\b", "\b");
             newString = newString.replace("\\n", "\n");
             newString = newString.replace("\\r", "\r");
@@ -314,7 +357,6 @@ public final class Parser {
             if(!match(")")) // if we don't find closing paren
             {
                 int index = (tokens.get(-1).getIndex() + tokens.get(-1).getLiteral().length());
-
                 throw new ParseException("Expected closing parenthesis.", index);
                 // TODO: "include character index position from the token to return instead of -1"
             }
@@ -323,9 +365,6 @@ public final class Parser {
         else
         {
             throw new ParseException("Invalid primary expression.", (tokens.get(0).getIndex() + tokens.get(0).getLiteral().length()));
-
-            // TODO: handle actual character index instead of -1
-
         }
     }
 
@@ -340,7 +379,6 @@ public final class Parser {
      * {@code peek(Token.Type.IDENTIFIER)} and {@code peek("literal")}.
      */
     private boolean peek(Object... patterns) {
-        //throw new UnsupportedOperationException(); //TODO (in lecture)
         for (int i = 0; i < patterns.length; i++)
         {
             if (!tokens.has(i))
