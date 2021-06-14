@@ -229,17 +229,23 @@ public final class Parser {
                 if(match("("))
                 {
 
-
                     if(match(")")) // if the parenthesis are empty
                     {
                         return new Ast.Expr.Function(Optional.of(expr), methodName ,exprs);
                     }
-                    exprs = new ArrayList<>(exprs);
-                    while(!match(")"))
-                    {
 
+
+                    exprs = new ArrayList<>(exprs);
+                    while(!peek(")"))
+                    {
                         exprs.add(parseExpression());
                     }
+                    if(match(")")) // if the parenthesis are empty
+                    {
+                        return new Ast.Expr.Function(Optional.of(expr), methodName ,exprs);
+                    }
+
+
                 }
                 if(Character.isLetter(tokens.get(-1).getLiteral().charAt(0)) || tokens.get(-1).getLiteral().charAt(0) == '_')
                 {
