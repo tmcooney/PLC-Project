@@ -231,19 +231,29 @@ public final class Parser {
 
                     if(match(")")) // if the parenthesis are empty
                     {
-                        return new Ast.Expr.Function(Optional.of(expr), methodName ,exprs);
+                        expr = new Ast.Expr.Function(Optional.of(expr), methodName ,exprs);
+                        continue;
                     }
-
-
-                    exprs = new ArrayList<>(exprs);
-                    while(!peek(")"))
+                    else // the paren are not empty
                     {
+                        exprs = new ArrayList<>(exprs);
                         exprs.add(parseExpression());
+                        while(match(","))
+                        {
+                            exprs.add(parseExpression());
+                        }
+                        if(match(")")) // if the parenthesis are empty
+                        {
+                            return new Ast.Expr.Function(Optional.of(expr), methodName ,exprs);
+                        }
+                        else
+                        {
+                            throw new ParseException("Invalid Identifier.", tokens.get(-1).getIndex());
+                        }
+
                     }
-                    if(match(")")) // if the parenthesis are empty
-                    {
-                        return new Ast.Expr.Function(Optional.of(expr), methodName ,exprs);
-                    }
+
+
 
 
                 }
@@ -370,6 +380,10 @@ public final class Parser {
         }
         else
         {
+            if(tokens.get(0).getLiteral().length() == 1) //invalid expression
+            {
+                throw new ParseException("Invalid Expression", 0);
+            }
             throw new ParseException("Invalid primary expression.", (tokens.get(0).getIndex() + tokens.get(0).getLiteral().length()));
         }
     }
