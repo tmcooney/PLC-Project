@@ -100,11 +100,19 @@ public final class Parser {
             if (match(")", "DO"))
             {
 
-                while (!match("END"))
+                while (!peek("END") && tokens.has(2))
                 {
                     statements.add(parseStatement());
                 }
-                return new Ast.Method(name, parameters, statements);
+                if (match("END"))
+                {
+                    return new Ast.Method(name, parameters, statements);
+                }
+                else
+                {
+                    throw new ParseException("Missing \"END\" in method", tokens.get(0).getIndex());
+                }
+
 
             }
 
