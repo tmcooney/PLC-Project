@@ -33,16 +33,43 @@ public final class Parser {
      */
     public Ast.Source parseSource() throws ParseException
     {
-
-        throw new UnsupportedOperationException(); //TODO
+        //return new Ast.Source()
+        List <Ast.Field> fields = new ArrayList<>();
+        List <Ast.Method> methods = new ArrayList<>();
+        while(peek("LET")) // if the next token starts a field
+        {
+            fields.add(parseField());
+        }
+        while(peek("DEF"))
+        {
+            methods.add(parseMethod());
+        }
+        return new Ast.Source(fields, methods);
     }
 
     /**
      * Parses the {@code field} rule. This method should only be called if the
      * next tokens start a field, aka {@code LET}.
      */
-    public Ast.Field parseField() throws ParseException {
-        throw new UnsupportedOperationException(); //TODO
+    public Ast.Field parseField() throws ParseException
+    {
+        if(match("LET"))
+        {
+            if(match(Token.Type.IDENTIFIER))
+            {
+                String name = tokens.get(-1).getLiteral();
+                if(match("="))
+                {
+                    Ast.Expr expr = parseExpression();
+                    if(match(";"))
+                    {
+
+                        return new Ast.Field(name, Optional.of(expr));
+                    }
+                }
+            }
+        }
+        throw new ParseException("invalid field", tokens.get(-1).getIndex());
     }
 
     /**
@@ -50,7 +77,39 @@ public final class Parser {
      * next tokens start a method, aka {@code DEF}.
      */
     public Ast.Method parseMethod() throws ParseException {
-        throw new UnsupportedOperationException(); //TODO
+
+        List<String> parameters = new ArrayList<>();
+        List<Ast.Stmt> statements = new ArrayList<>();
+        if(match("DEF", Token.Type.IDENTIFIER, "("))
+        {
+            String name = tokens.get(-2).getLiteral();
+            if(match(Token.Type.IDENTIFIER)) // if there is something in the paren
+            {
+                while(match(","))
+                {
+                    if(match(Token.Type.IDENTIFIER))
+                    {
+                        parameters.add(tokens.get(-1).getLiteral());
+                    }
+                    else
+                    {
+                        throw new ParseException("invalid identifier", tokens.get(0).getIndex());
+                    }
+                }
+            }
+            if (match(")", "DO"))
+            {
+
+                while (!match("END"))
+                {
+                    statements.add(parseStatement());
+                }
+                return new Ast.Method(name, parameters, statements);
+
+            }
+
+        }
+        throw new ParseException("invalid method", tokens.get(0).getIndex());
     }
 
     /**
@@ -58,8 +117,14 @@ public final class Parser {
      * If the next tokens do not start a declaration, if, while, or return
      * statement, then it is an expression/assignment statement.
      */
-    public Ast.Stmt parseStatement() throws ParseException {
-        //throw new UnsupportedOperationException(); //TODO
+    public Ast.Stmt parseStatement() throws ParseException
+    {
+        if(peek("LET"))
+        {
+            return parseDeclarationStatement();
+        }
+
+
         Ast.Stmt.Expr receiver = parseExpression();
         if (match("="))
         {
@@ -73,7 +138,7 @@ public final class Parser {
         {
             return new Ast.Stmt.Expression(receiver);
         }
-        throw new ParseException("Missing semi-colon.", tokens.index);
+        throw new ParseException("Missing semi-colon.", tokens.get(0).getIndex()); // TODO: fix this index!
     }
 
     /**
@@ -224,13 +289,14 @@ public final class Parser {
             if(match(Token.Type.IDENTIFIER))
             {
                 String methodName = tokens.get(-1).getLiteral();
-                List <Ast.Expr> exprs;
-                exprs = Arrays.asList();
+                List <Ast.Expr> exprs = new ArrayList<>();
+
                 if(match("("))
                 {
 
                     if(match(")")) // if the parenthesis are empty
                     {
+                        exprs = Arrays.asList();
                         expr = new Ast.Expr.Function(Optional.of(expr), methodName ,exprs);
                         continue;
                     }
@@ -250,12 +316,7 @@ public final class Parser {
                         {
                             throw new ParseException("Invalid Identifier.", tokens.get(-1).getIndex());
                         }
-
                     }
-
-
-
-
                 }
                 if(Character.isLetter(tokens.get(-1).getLiteral().charAt(0)) || tokens.get(-1).getLiteral().charAt(0) == '_')
                 {
@@ -299,13 +360,11 @@ public final class Parser {
         }
         else if(match(Token.Type.INTEGER))
         {
-            BigInteger integer = new BigInteger(tokens.get(-1).getLiteral());
-            return new Ast.Expr.Literal(integer);
+            return new Ast.Expr.Literal(new BigInteger(tokens.get(-1).getLiteral()));
         }
         else if(match(Token.Type.DECIMAL))
         {
-            BigDecimal bigDecimal = new BigDecimal(tokens.get(-1).getLiteral());
-            return new Ast.Expr.Literal(bigDecimal);
+            return new Ast.Expr.Literal(new BigDecimal(tokens.get(-1).getLiteral()));
         }
         else if(match(Token.Type.CHARACTER))
         {
