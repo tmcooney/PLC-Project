@@ -53,23 +53,24 @@ public final class Parser {
      */
     public Ast.Field parseField() throws ParseException
     {
-        if(match("LET"))
+        if(match("LET", Token.Type.IDENTIFIER))
         {
-            if(match(Token.Type.IDENTIFIER))
+            String name = tokens.get(-1).getLiteral();
+            if(match("="))
             {
-                String name = tokens.get(-1).getLiteral();
-                if(match("="))
+                Ast.Expr expr = parseExpression();
+                if(match(";"))
                 {
-                    Ast.Expr expr = parseExpression();
-                    if(match(";"))
-                    {
-
-                        return new Ast.Field(name, Optional.of(expr));
-                    }
+                    return new Ast.Field(name, Optional.of(expr));
                 }
+            }
+            else if(match(";"))
+            {
+                return new Ast.Field(name, Optional.empty());
             }
         }
         throw new ParseException("invalid field", tokens.get(-1).getIndex());
+
     }
 
     /**
@@ -123,22 +124,39 @@ public final class Parser {
         {
             return parseDeclarationStatement();
         }
-
-
-        Ast.Stmt.Expr receiver = parseExpression();
-        if (match("="))
+        else if(peek("IF"))
         {
-            Ast.Expr value = parseExpression();
-            if(match(";"))
+            return parseIfStatement();
+        }
+        else if(peek("FOR"))
+        {
+            return parseForStatement();
+        }
+        else if(peek("WHILE"))
+        {
+            return parseWhileStatement();
+        }
+        else if(peek("RETURN"))
+        {
+            return parseReturnStatement();
+        }
+        else
+        {
+            Ast.Stmt.Expr receiver = parseExpression();
+            if (match("="))
             {
-                return new Ast.Stmt.Assignment(receiver, value);
+                Ast.Expr value = parseExpression();
+                if(match(";"))
+                {
+                    return new Ast.Stmt.Assignment(receiver, value);
+                }
             }
+            else if (match(";"))
+            {
+                return new Ast.Stmt.Expression(receiver);
+            }
+            throw new ParseException("Missing semi-colon.", tokens.get(0).getIndex()); // TODO: fix this index!
         }
-        else if (match(";"))
-        {
-            return new Ast.Stmt.Expression(receiver);
-        }
-        throw new ParseException("Missing semi-colon.", tokens.get(0).getIndex()); // TODO: fix this index!
     }
 
     /**
@@ -146,8 +164,25 @@ public final class Parser {
      * method should only be called if the next tokens start a declaration
      * statement, aka {@code LET}.
      */
-    public Ast.Stmt.Declaration parseDeclarationStatement() throws ParseException {
-        throw new UnsupportedOperationException(); //TODO
+    public Ast.Stmt.Declaration parseDeclarationStatement() throws ParseException
+    {
+        if(match("LET", Token.Type.IDENTIFIER))
+        {
+            String name = tokens.get(-1).getLiteral();
+            if(match("="))
+            {
+                Ast.Expr expr = parseExpression();
+                if(match(";"))
+                {
+                    return new Ast.Stmt.Declaration(name, Optional.of(expr));
+                }
+            }
+            else if(match(";"))
+            {
+                return new Ast.Stmt.Declaration(name, Optional.empty());
+            }
+        }
+        throw new ParseException("invalid declaration statement", tokens.get(-1).getIndex());
     }
 
     /**
@@ -155,8 +190,30 @@ public final class Parser {
      * should only be called if the next tokens start an if statement, aka
      * {@code IF}.
      */
-    public Ast.Stmt.If parseIfStatement() throws ParseException {
-        throw new UnsupportedOperationException(); //TODO
+    public Ast.Stmt.If parseIfStatement() throws ParseException
+    {
+        List<Ast.Stmt> doStatements = new ArrayList<>();
+        List<Ast.Stmt> elseStatements = new ArrayList<>();
+        if (match("IF"))
+        {
+            Ast.Expr expr = parseExpression();
+            if (match("DO"))
+            {
+                while (!peek("ELSE") && !peek("END"))
+                {
+                    doStatements.add(parseStatement());
+                }
+                while(match("ELSE"))
+                {
+                    elseStatements.add(parseStatement());
+                }
+                if (match("END"))
+                {
+                    return new Ast.Stmt.If(expr, doStatements, elseStatements);
+                }
+            }
+        }
+        throw new ParseException("invalid IF statement", tokens.index); //TODO fix index!
     }
 
     /**
@@ -164,8 +221,26 @@ public final class Parser {
      * should only be called if the next tokens start a for statement, aka
      * {@code FOR}.
      */
-    public Ast.Stmt.For parseForStatement() throws ParseException {
-        throw new UnsupportedOperationException(); //TODO
+    public Ast.Stmt.For parseForStatement() throws ParseException
+    {
+        if (match("FOR", Token.Type.IDENTIFIER, "IN"))
+        {
+            List<Ast.Stmt> statements = new ArrayList<>();
+            String name = tokens.get(-2).getLiteral();
+            Ast.Expr expr = parseExpression();
+            if (match("DO"))
+            {
+                while (!peek("END"))
+                {
+                    statements.add(parseStatement());
+                }
+                if (match("END"))
+                {
+                    return new Ast.Stmt.For(name, expr, statements);
+                }
+            }
+        }
+        throw new ParseException("Invalid For Statement", tokens.index); //TODO fix index!
     }
 
     /**
@@ -173,8 +248,25 @@ public final class Parser {
      * should only be called if the next tokens start a while statement, aka
      * {@code WHILE}.
      */
-    public Ast.Stmt.While parseWhileStatement() throws ParseException {
-        throw new UnsupportedOperationException(); //TODO
+    public Ast.Stmt.While parseWhileStatement() throws ParseException
+    {
+        if (match("WHILE"))
+        {
+            List<Ast.Stmt> statements = new ArrayList<>();
+            Ast.Expr expr = parseExpression();
+            if (match("DO"))
+            {
+                while (!peek("END"))
+                {
+                    statements.add(parseStatement());
+                }
+                if (match("END"))
+                {
+                    return new Ast.Stmt.While(expr, statements);
+                }
+            }
+        }
+        throw new ParseException("Invalid while statement", tokens.get(0).getIndex()); //TODO
     }
 
     /**
@@ -182,8 +274,17 @@ public final class Parser {
      * should only be called if the next tokens start a return statement, aka
      * {@code RETURN}.
      */
-    public Ast.Stmt.Return parseReturnStatement() throws ParseException {
-        throw new UnsupportedOperationException(); //TODO
+    public Ast.Stmt.Return parseReturnStatement() throws ParseException
+    {
+        if (match("RETURN"))
+        {
+            Ast.Expr expr = parseExpression();
+            if (match(";"))
+            {
+                return new Ast.Stmt.Return(expr);
+            }
+        }
+        throw new ParseException("Invalid return statement", tokens.get(0).getIndex()); //TODO
     }
 
     /**
