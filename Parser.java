@@ -33,7 +33,6 @@ public final class Parser {
      */
     public Ast.Source parseSource() throws ParseException
     {
-        //return new Ast.Source()
         List <Ast.Field> fields = new ArrayList<>();
         List <Ast.Method> methods = new ArrayList<>();
         while(peek("LET")) // if the next token starts a field
@@ -155,7 +154,7 @@ public final class Parser {
             {
                 return new Ast.Stmt.Expression(receiver);
             }
-            throw new ParseException("Missing semi-colon.", tokens.get(0).getIndex()); // TODO: fix this index!
+            throw new ParseException("Invalid Statement", tokens.get(0).getIndex()); // TODO: fix this index!
         }
     }
 
@@ -256,7 +255,7 @@ public final class Parser {
             Ast.Expr expr = parseExpression();
             if (match("DO"))
             {
-                while (!peek("END"))
+                while (!peek("END") && tokens.has(2))
                 {
                     statements.add(parseStatement());
                 }
