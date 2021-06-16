@@ -104,7 +104,7 @@ public final class Parser {
                             }
                         }
                     }
-                    if (match(")"))
+                    else if (match(")"))
                     {
 
                         if (match("DO"))
@@ -143,11 +143,13 @@ public final class Parser {
                         if (tokens.has(0))
                         {
                             int index = (tokens.get(-1).getIndex());// + tokens.get(-1).getLiteral().length());
+                            System.out.println(index);
                             throw new ParseException("Method missing Closing paren", index);
                         }
                         else
                         {
                             int index = (tokens.get(-1).getIndex()) + tokens.get(-1).getLiteral().length();
+                            System.out.println(index);
                             throw new ParseException("Method missing Closing paren", index);
                         }
                     }
@@ -217,12 +219,22 @@ public final class Parser {
                 {
                     return new Ast.Stmt.Assignment(receiver, value);
                 }
+                else
+                {
+                    int index = tokens.get(-1).getIndex() + tokens.get(-1).getLiteral().length();
+                    throw new ParseException("Missing semi-colon", index);
+                }
             }
-            else if (match(";"))
+            if (match(";"))
             {
                 return new Ast.Stmt.Expression(receiver);
             }
-            throw new ParseException("Invalid Statement", tokens.get(0).getIndex()); // TODO: fix this index!
+            else
+            {
+                int index = tokens.get(-1).getIndex() + tokens.get(-1).getLiteral().length();
+                System.out.println(index);
+                throw new ParseException("Missing semi-colon", index);
+            }
         }
     }
 
@@ -277,6 +289,32 @@ public final class Parser {
                 if (match("END"))
                 {
                     return new Ast.Stmt.If(expr, doStatements, elseStatements);
+                }
+                else
+                {
+                    if (tokens.has(0))
+                    {
+                        int index = (tokens.get(0).getIndex());// + tokens.get(-1).getLiteral().length());
+                        throw new ParseException("Expected \"END\"", index);
+                    }
+                    else
+                    {
+                        int index = (tokens.get(-1).getIndex()) + tokens.get(-1).getLiteral().length();
+                        throw new ParseException("Expected \"END\"", index);
+                    }
+                }
+            }
+            else
+            {
+                if (tokens.has(0))
+                {
+                    int index = (tokens.get(0).getIndex());// + tokens.get(-1).getLiteral().length());
+                    throw new ParseException("Expected \"DO\"", index);
+                }
+                else
+                {
+                    int index = (tokens.get(-1).getIndex()) + tokens.get(-1).getLiteral().length();
+                    throw new ParseException("Expected \"DO\"", index);
                 }
             }
         }
