@@ -62,13 +62,17 @@ public final class Parser {
                 {
                     return new Ast.Field(name, Optional.of(expr));
                 }
+                else
+                {
+                    throw new ParseException("Field Missing Semi-Colon", tokens.get(-1).getIndex());
+                }
             }
             else if(match(";"))
             {
                 return new Ast.Field(name, Optional.empty());
             }
         }
-        throw new ParseException("invalid field", tokens.get(-1).getIndex());
+        throw new ParseException("invalid field", tokens.get(0).getIndex());
 
     }
 
@@ -104,19 +108,15 @@ public final class Parser {
                 {
                     statements.add(parseStatement());
                 }
-                if (match("END"))
+                if (match("END") && !tokens.has(0))
                 {
                     return new Ast.Method(name, parameters, statements);
                 }
-                else
-                {
-                    throw new ParseException("Missing \"END\" in method", tokens.get(0).getIndex());
-                }
-
-
             }
 
         }
+        int index = tokens.get(0).getIndex();
+        System.out.println("index: " + index);
         throw new ParseException("invalid method", tokens.get(0).getIndex());
     }
 
