@@ -84,40 +84,100 @@ public final class Parser {
 
         List<String> parameters = new ArrayList<>();
         List<Ast.Stmt> statements = new ArrayList<>();
-        if(match("DEF", Token.Type.IDENTIFIER, "("))
-        {
-            String name = tokens.get(-2).getLiteral();
-            if(match(Token.Type.IDENTIFIER)) // if there is something in the paren
+        if(match("DEF")) {
+            if (match(Token.Type.IDENTIFIER))
             {
-                while(match(","))
+                if (match("("))
                 {
-                    if(match(Token.Type.IDENTIFIER))
+                    String name = tokens.get(-2).getLiteral();
+                    if(match(Token.Type.IDENTIFIER)) // if there is something in the paren
                     {
-                        parameters.add(tokens.get(-1).getLiteral());
+                        while(match(","))
+                        {
+                            if(match(Token.Type.IDENTIFIER))
+                            {
+                                parameters.add(tokens.get(-1).getLiteral());
+                            }
+                            else
+                            {
+                                throw new ParseException("invalid identifier", tokens.get(0).getIndex());
+                            }
+                        }
+                    }
+                    if (match(")"))
+                    {
+
+                        if (match("DO"))
+                        {
+
+                            while (!peek("END") && tokens.has(2))
+                            {
+                                statements.add(parseStatement());
+                            }
+                            if (match("END") && !tokens.has(0))
+                            {
+                                return new Ast.Method(name, parameters, statements);
+                            }
+                            else
+                            {
+                                int index = (tokens.get(1).getIndex() + tokens.get(1).getLiteral().length());
+                                throw new ParseException("Method Missing \"END\"", index);
+                            }
+                        }
+                        else
+                        {
+                            if (tokens.has(0))
+                            {
+                                int index = (tokens.get(0).getIndex());// + tokens.get(-1).getLiteral().length());
+                                throw new ParseException("Expected \"DO\"", index);
+                            }
+                            else
+                            {
+                                int index = (tokens.get(-1).getIndex()) + tokens.get(-1).getLiteral().length();
+                                throw new ParseException("Expected \"DO\"", index);
+                            }
+                        }
                     }
                     else
                     {
-                        throw new ParseException("invalid identifier", tokens.get(0).getIndex());
+                        if (tokens.has(0))
+                        {
+                            int index = (tokens.get(-1).getIndex());// + tokens.get(-1).getLiteral().length());
+                            throw new ParseException("Method missing Closing paren", index);
+                        }
+                        else
+                        {
+                            int index = (tokens.get(-1).getIndex()) + tokens.get(-1).getLiteral().length();
+                            throw new ParseException("Method missing Closing paren", index);
+                        }
                     }
                 }
+                else
+                {
+                    if (tokens.has(0))
+                    {
+                        int index = (tokens.get(0).getIndex());// + tokens.get(-1).getLiteral().length());
+                        System.out.println(index);
+                        throw new ParseException("Method missing opening paren", index);
+                    }
+                    else
+                    {
+                        int index = (tokens.get(-1).getIndex()) + tokens.get(-1).getLiteral().length();
+                        System.out.println(index);
+                        throw new ParseException("Method missing opening paren", index);
+                    }
+
+                }
             }
-            if (match(")", "DO"))
+            else
             {
-
-                while (!peek("END") && tokens.has(2))
-                {
-                    statements.add(parseStatement());
-                }
-                if (match("END") && !tokens.has(0))
-                {
-                    return new Ast.Method(name, parameters, statements);
-                }
+                int index = (tokens.get(-1).getIndex() + tokens.get(-1).getLiteral().length());
+                throw new ParseException("Method missing identifier", index);
             }
-
         }
-        int index = tokens.get(0).getIndex();
-        System.out.println("index: " + index);
-        throw new ParseException("invalid method", tokens.get(0).getIndex());
+
+        System.out.println(tokens.get(1).getIndex() + tokens.get(1).getLiteral().length());
+        throw new ParseException("Invalid Method", tokens.get(1).getIndex());
     }
 
     /**
