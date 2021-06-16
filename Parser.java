@@ -232,8 +232,7 @@ public final class Parser {
             else
             {
                 int index = tokens.get(-1).getIndex() + tokens.get(-1).getLiteral().length();
-                System.out.println(index);
-                throw new ParseException("Missing semi-colon", index);
+                throw new ParseException("Missing semicolon", index);
             }
         }
     }
@@ -737,7 +736,5 @@ public final class Parser {
         public void advance() {
             index++;
         }
-
     }
-
 }
