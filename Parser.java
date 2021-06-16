@@ -574,8 +574,7 @@ public final class Parser {
         else if(match(Token.Type.CHARACTER))
         {
             String charString = tokens.get(-1).getLiteral();
-            charString = charString.replace("\'","" );
-            charString = charString.replace("\"", "");
+            charString = charString.substring(1, charString.length() - 1);
             charString = charString.replace("\\b", "\b");
             charString = charString.replace("\\n", "\n");
             charString = charString.replace("\\r", "\r");
@@ -625,7 +624,7 @@ public final class Parser {
                 else
                 {
                     int index = (tokens.get(-1).getIndex() + tokens.get(-1).getLiteral().length());
-                    throw new ParseException("Missing closing paren.", index);
+                    throw new ParseException("Expected Closing Paren.", index);
                 }
             }
             return new Ast.Expr.Access(Optional.empty(), functionName); // obj.method() obj is receiver "Alan Kay message passing"
@@ -638,7 +637,6 @@ public final class Parser {
             {
                 int index = (tokens.get(-1).getIndex() + tokens.get(-1).getLiteral().length());
                 throw new ParseException("Expected closing parenthesis.", index);
-                // TODO: "include character index position from the token to return instead of -1"
             }
             return new Ast.Expr.Group(expr);
         }
