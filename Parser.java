@@ -143,13 +143,11 @@ public final class Parser {
                         if (tokens.has(0))
                         {
                             int index = (tokens.get(-1).getIndex());// + tokens.get(-1).getLiteral().length());
-                            System.out.println(index);
                             throw new ParseException("Method missing Closing paren", index);
                         }
                         else
                         {
                             int index = (tokens.get(-1).getIndex()) + tokens.get(-1).getLiteral().length();
-                            System.out.println(index);
                             throw new ParseException("Method missing Closing paren", index);
                         }
                     }
@@ -159,13 +157,11 @@ public final class Parser {
                     if (tokens.has(0))
                     {
                         int index = (tokens.get(0).getIndex());// + tokens.get(-1).getLiteral().length());
-                        System.out.println(index);
                         throw new ParseException("Method missing opening paren", index);
                     }
                     else
                     {
                         int index = (tokens.get(-1).getIndex()) + tokens.get(-1).getLiteral().length();
-                        System.out.println(index);
                         throw new ParseException("Method missing opening paren", index);
                     }
 
@@ -327,24 +323,89 @@ public final class Parser {
      */
     public Ast.Stmt.For parseForStatement() throws ParseException
     {
-        if (match("FOR", Token.Type.IDENTIFIER, "IN"))
+        if (match("FOR"))
         {
-            List<Ast.Stmt> statements = new ArrayList<>();
-            String name = tokens.get(-2).getLiteral();
-            Ast.Expr expr = parseExpression();
-            if (match("DO"))
+            if (match(Token.Type.IDENTIFIER))
             {
-                while (!peek("END"))
+                if (match("IN"))
                 {
-                    statements.add(parseStatement());
+                    List<Ast.Stmt> statements = new ArrayList<>();
+                    String name = tokens.get(-2).getLiteral();
+                    Ast.Expr expr = parseExpression();
+                    if (match("DO"))
+                    {
+                        while (!peek("END") && tokens.has(0))
+                        {
+                            statements.add(parseStatement());
+                        }
+                        if (match("END"))
+                        {
+                            return new Ast.Stmt.For(name, expr, statements);
+                        }
+                        else
+                        {
+                            int index = (tokens.get(-1).getIndex()) + tokens.get(-1).getLiteral().length();
+                            throw new ParseException("Expected \"END\"", index);
+                        }
+                    }
+                    else
+                    {
+                        if (tokens.has(0))
+                        {
+                            int index = (tokens.get(0).getIndex());// + tokens.get(-1).getLiteral().length());
+                            throw new ParseException("Expected \"DO\"", index);
+                        }
+                        else
+                        {
+                            int index = (tokens.get(-1).getIndex()) + tokens.get(-1).getLiteral().length();
+                            throw new ParseException("Expected \"DO\"", index);
+                        }
+                    }
                 }
-                if (match("END"))
+                else // expected IN
                 {
-                    return new Ast.Stmt.For(name, expr, statements);
+                    if (tokens.has(0))
+                    {
+                        int index = (tokens.get(0).getIndex());// + tokens.get(-1).getLiteral().length());
+                        System.out.println(index);
+                        throw new ParseException("Expected \"IN\"", index);
+                    }
+                    else
+                    {
+                        int index = (tokens.get(-1).getIndex()) + tokens.get(-1).getLiteral().length();
+                        System.out.println(index);
+                        throw new ParseException("Expected \"IN\"", index);
+                    }
                 }
             }
+            else //invalid identifier
+            {
+                if (tokens.has(0))
+                {
+                    int index = (tokens.get(0).getIndex());// + tokens.get(-1).getLiteral().length());
+                    throw new ParseException("Invalid Identifier", index);
+                }
+                else
+                {
+                    int index = (tokens.get(-1).getIndex()) + tokens.get(-1).getLiteral().length();
+                    throw new ParseException("Invalid Identifier", index);
+                }
+            }
+
+
         }
-        throw new ParseException("Invalid For Statement", tokens.index); //TODO fix index!
+
+        if (tokens.has(0))
+        {
+            int index = (tokens.get(0).getIndex());// + tokens.get(-1).getLiteral().length());
+            throw new ParseException("Invalid FOR statement", index);
+        }
+        else
+        {
+            int index = (tokens.get(-1).getIndex()) + tokens.get(-1).getLiteral().length();
+            throw new ParseException("Invalid FOR statement", index);
+        }
+        //throw new ParseException("Invalid For Statement", tokens.index); //TODO fix index!
     }
 
     /**
