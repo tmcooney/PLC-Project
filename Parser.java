@@ -64,7 +64,8 @@ public final class Parser {
                 }
                 else
                 {
-                    throw new ParseException("Field Missing Semi-Colon", tokens.get(-1).getIndex());
+                    int index = (tokens.get(-1).getIndex()) + tokens.get(-1).getLiteral().length();
+                    throw new ParseException("Field Missing Semi-Colon", index);
                 }
             }
             else if(match(";"))
@@ -367,13 +368,11 @@ public final class Parser {
                     if (tokens.has(0))
                     {
                         int index = (tokens.get(0).getIndex());// + tokens.get(-1).getLiteral().length());
-                        System.out.println(index);
                         throw new ParseException("Expected \"IN\"", index);
                     }
                     else
                     {
                         int index = (tokens.get(-1).getIndex()) + tokens.get(-1).getLiteral().length();
-                        System.out.println(index);
                         throw new ParseException("Expected \"IN\"", index);
                     }
                 }
