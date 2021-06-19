@@ -105,7 +105,7 @@ public final class Parser {
                             }
                         }
                     }
-                    else if (match(")"))
+                    if (match(")"))
                     {
 
                         if (match("DO"))
@@ -251,10 +251,20 @@ public final class Parser {
                 {
                     return new Ast.Stmt.Declaration(name, Optional.of(expr));
                 }
+                else
+                {
+                    int index = (tokens.get(-1).getIndex()) + tokens.get(-1).getLiteral().length();
+                    throw new ParseException("Field Missing Semi-Colon", index);
+                }
             }
-            else if(match(";"))
+            if(match(";"))
             {
                 return new Ast.Stmt.Declaration(name, Optional.empty());
+            }
+            else
+            {
+                int index = (tokens.get(-1).getIndex()) + tokens.get(-1).getLiteral().length();
+                throw new ParseException("Declaration Missing Semi-Colon", index);
             }
         }
         throw new ParseException("invalid declaration statement", tokens.get(-1).getIndex());
