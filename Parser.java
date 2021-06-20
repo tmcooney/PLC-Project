@@ -73,7 +73,7 @@ public final class Parser {
                 return new Ast.Field(name, Optional.empty());
             }
         }
-        throw new ParseException("invalid field", tokens.get(0).getIndex());
+        throw new ParseException("invalid field", tokens.get(1).getIndex());
 
     }
 
@@ -122,6 +122,7 @@ public final class Parser {
                             else
                             {
                                 int index = (tokens.get(1).getIndex() + tokens.get(1).getLiteral().length());
+                                System.out.println(index);
                                 throw new ParseException("Method Missing \"END\"", index);
                             }
                         }
@@ -130,6 +131,7 @@ public final class Parser {
                             if (tokens.has(0))
                             {
                                 int index = (tokens.get(0).getIndex());// + tokens.get(-1).getLiteral().length());
+                                System.out.println(index);
                                 throw new ParseException("Expected \"DO\"", index);
                             }
                             else
@@ -324,7 +326,16 @@ public final class Parser {
                 }
             }
         }
-        throw new ParseException("invalid IF statement", tokens.index); //TODO fix index!
+        if (tokens.has(0))
+        {
+            int index = (tokens.get(0).getIndex());// + tokens.get(-1).getLiteral().length());
+            throw new ParseException("Invalid If Statement", index);
+        }
+        else
+        {
+            int index = (tokens.get(-1).getIndex()) + tokens.get(-1).getLiteral().length();
+            throw new ParseException("Invalid If Statement", index);
+        }
     }
 
     /**
@@ -400,8 +411,6 @@ public final class Parser {
                     throw new ParseException("Invalid Identifier", index);
                 }
             }
-
-
         }
 
         if (tokens.has(0))
@@ -414,7 +423,6 @@ public final class Parser {
             int index = (tokens.get(-1).getIndex()) + tokens.get(-1).getLiteral().length();
             throw new ParseException("Invalid FOR statement", index);
         }
-        //throw new ParseException("Invalid For Statement", tokens.index); //TODO fix index!
     }
 
     /**
@@ -438,9 +446,36 @@ public final class Parser {
                 {
                     return new Ast.Stmt.While(expr, statements);
                 }
+                else
+                {
+                    int index = (tokens.get(1).getIndex()) + tokens.get(1).getLiteral().length();
+                    throw new ParseException("Expected \"END\"", index);
+                }
+            }
+            else
+            {
+                if (tokens.has(0))
+                {
+                    int index = (tokens.get(0).getIndex());// + tokens.get(-1).getLiteral().length());
+                    throw new ParseException("Expected \"DO\"", index);
+                }
+                else
+                {
+                    int index = (tokens.get(-1).getIndex()) + tokens.get(-1).getLiteral().length();
+                    throw new ParseException("Expected \"DO\"", index);
+                }
             }
         }
-        throw new ParseException("Invalid while statement", tokens.get(0).getIndex()); //TODO
+        if (tokens.has(0))
+        {
+            int index = (tokens.get(0).getIndex());// + tokens.get(-1).getLiteral().length());
+            throw new ParseException("Invalid while statement", index);
+        }
+        else
+        {
+            int index = (tokens.get(-1).getIndex()) + tokens.get(-1).getLiteral().length();
+            throw new ParseException("Invalid while statement", index);
+        }
     }
 
     /**
@@ -456,6 +491,11 @@ public final class Parser {
             if (match(";"))
             {
                 return new Ast.Stmt.Return(expr);
+            }
+            else
+            {
+                int index = (tokens.get(-1).getIndex()) + tokens.get(-1).getLiteral().length();
+                throw new ParseException("Expected semicolon", index);
             }
         }
         throw new ParseException("Invalid return statement", tokens.get(0).getIndex()); //TODO
