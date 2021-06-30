@@ -86,19 +86,124 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject> {
     @Override
     public Environment.PlcObject visit(Ast.Expr.Group ast)
     {
-        if (ast.getExpression()instanceof Ast.Expr.Literal)
-        {
-            return visit(ast.getExpression());
-        }
-        if (ast.getExpression()instanceof Ast.Expr.Binary)
-        {
-            return visit(ast.getExpression());
-        }
-        throw new RuntimeException();
+        return visit(ast.getExpression());
     }
 
     @Override
-    public Environment.PlcObject visit(Ast.Expr.Binary ast) {
+    public Environment.PlcObject visit(Ast.Expr.Binary ast)
+    {
+        Object left = ast.getLeft();
+        Object right = ast.getRight();
+        switch (ast.getOperator())
+        {
+            case "AND":
+                if (((Ast.Expr.Literal) left).getLiteral().equals(true)) //if the left operand is true
+                {
+                    if (((Ast.Expr.Literal) right).getLiteral().equals(true))
+                    {
+                        return Environment.create(true);
+                    }
+                }
+                return Environment.create(false);
+            case "OR":
+                if (((Ast.Expr.Literal) left).getLiteral().equals(true))
+                {
+                    return Environment.create(true);
+                }
+                if (((Ast.Expr.Literal) right).getLiteral().equals(true))
+                {
+                    return Environment.create(true);
+                }
+                return Environment.create(false);
+            case "<":
+
+                if (left.getClass().equals(right.getClass())) // must be the same class as LHO
+                {
+
+                }
+
+            case "+":
+
+                if (((Ast.Expr.Literal) left).getLiteral().getClass().equals(((Ast.Expr.Literal) right).getLiteral().getClass()))
+                {
+                    if (((Ast.Expr.Literal) left).getLiteral() instanceof String)
+                    {
+                        String string1 = (String)((Ast.Expr.Literal) left).getLiteral();
+                        String string2 = (String)((Ast.Expr.Literal) right).getLiteral();
+                        return Environment.create(string1 + string2);
+                    }
+                    if (((Ast.Expr.Literal) left).getLiteral() instanceof BigInteger)
+                    {
+                        BigInteger lefty = (BigInteger) ((Ast.Expr.Literal) left).getLiteral();
+                        BigInteger righty = (BigInteger) (((Ast.Expr.Literal) right).getLiteral());
+                        return Environment.create(lefty.add(righty));
+                    }
+                    if (((Ast.Expr.Literal) left).getLiteral() instanceof BigDecimal)
+                    {
+                        BigDecimal lefty = (BigDecimal) ((Ast.Expr.Literal) left).getLiteral();
+                        BigDecimal righty = (BigDecimal) (((Ast.Expr.Literal) right).getLiteral());
+                        return Environment.create(lefty.add(righty));
+                    }
+                }
+                throw new RuntimeException();
+
+            case "-":
+
+                if (((Ast.Expr.Literal) left).getLiteral().getClass().equals(((Ast.Expr.Literal) right).getLiteral().getClass()))
+                {
+                    if (((Ast.Expr.Literal) left).getLiteral() instanceof BigInteger)
+                    {
+                        BigInteger lefty = (BigInteger) ((Ast.Expr.Literal) left).getLiteral();
+                        BigInteger righty = (BigInteger) (((Ast.Expr.Literal) right).getLiteral());
+                        return Environment.create(lefty.subtract(righty));
+                    }
+                    if (((Ast.Expr.Literal) left).getLiteral() instanceof BigDecimal)
+                    {
+                        BigDecimal lefty = (BigDecimal) ((Ast.Expr.Literal) left).getLiteral();
+                        BigDecimal righty = (BigDecimal) (((Ast.Expr.Literal) right).getLiteral());
+                        return Environment.create(lefty.subtract(righty));
+                    }
+                }
+                throw new RuntimeException();
+
+            case "*":
+                if (((Ast.Expr.Literal) left).getLiteral().getClass().equals(((Ast.Expr.Literal) right).getLiteral().getClass()))
+                {
+                    if (((Ast.Expr.Literal) left).getLiteral() instanceof BigInteger)
+                    {
+                        BigInteger lefty = (BigInteger) ((Ast.Expr.Literal) left).getLiteral();
+                        BigInteger righty = (BigInteger) (((Ast.Expr.Literal) right).getLiteral());
+                        return Environment.create(lefty.multiply(righty));
+                    }
+                    if (((Ast.Expr.Literal) left).getLiteral() instanceof BigDecimal)
+                    {
+                        BigDecimal lefty = (BigDecimal) ((Ast.Expr.Literal) left).getLiteral();
+                        BigDecimal righty = (BigDecimal) (((Ast.Expr.Literal) right).getLiteral());
+                        return Environment.create(lefty.multiply(righty));
+                    }
+
+                }
+                throw new RuntimeException();
+
+            case "/":
+                if (((Ast.Expr.Literal) left).getLiteral().getClass().equals(((Ast.Expr.Literal) right).getLiteral().getClass()))
+                {
+                    if (((Ast.Expr.Literal) left).getLiteral() instanceof BigInteger)
+                    {
+                        BigInteger lefty = (BigInteger) ((Ast.Expr.Literal) left).getLiteral();
+                        BigInteger righty = (BigInteger) (((Ast.Expr.Literal) right).getLiteral());
+                        return Environment.create(lefty.divide(righty));
+                    }
+                    if (((Ast.Expr.Literal) left).getLiteral() instanceof BigDecimal)
+                    {
+                        BigDecimal lefty = (BigDecimal) ((Ast.Expr.Literal) left).getLiteral();
+                        BigDecimal righty = (BigDecimal) (((Ast.Expr.Literal) right).getLiteral());
+                        return Environment.create(lefty.divide(righty, RoundingMode.HALF_EVEN));
+                    }
+                }
+                throw new RuntimeException();
+
+        }
         throw new UnsupportedOperationException(); //TODO
     }
 
