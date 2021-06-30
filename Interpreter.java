@@ -84,8 +84,17 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject> {
     }
 
     @Override
-    public Environment.PlcObject visit(Ast.Expr.Group ast) {
-        throw new UnsupportedOperationException(); //TODO
+    public Environment.PlcObject visit(Ast.Expr.Group ast)
+    {
+        if (ast.getExpression()instanceof Ast.Expr.Literal)
+        {
+            return visit(ast.getExpression());
+        }
+        if (ast.getExpression()instanceof Ast.Expr.Binary)
+        {
+            return visit(ast.getExpression());
+        }
+        throw new RuntimeException();
     }
 
     @Override
