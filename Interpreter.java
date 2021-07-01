@@ -6,14 +6,11 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.lang.Comparable;
 
 public class Interpreter implements Ast.Visitor<Environment.PlcObject>
 {
 
     private Scope scope = new Scope(null);
-
-
 
     public Interpreter(Scope parent) {
         scope = new Scope(parent);
@@ -29,12 +26,18 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
     }
 
     @Override
-    public Environment.PlcObject visit(Ast.Source ast) {
+    public Environment.PlcObject visit(Ast.Source ast)
+    {
+        List<Ast.Field> fields = ast.getFields();
+        List<Ast.Method> methods = ast.getMethods();
+
         throw new UnsupportedOperationException(); //TODO
     }
 
     @Override
-    public Environment.PlcObject visit(Ast.Field ast) {
+    public Environment.PlcObject visit(Ast.Field ast)
+    {
+
         throw new UnsupportedOperationException(); //TODO
     }
 
@@ -99,6 +102,7 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
     {
         Ast.Expr left = ast.getLeft();
         Ast.Expr right = ast.getRight();
+
         switch (ast.getOperator())
         {
             case "AND":
