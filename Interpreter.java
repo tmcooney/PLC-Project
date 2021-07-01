@@ -31,6 +31,7 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
         List<Ast.Field> fields = ast.getFields();
         List<Ast.Method> methods = ast.getMethods();
 
+
         throw new UnsupportedOperationException(); //TODO
     }
 
@@ -47,8 +48,10 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
     }
 
     @Override
-    public Environment.PlcObject visit(Ast.Stmt.Expression ast) {
+    public Environment.PlcObject visit(Ast.Stmt.Expression ast)
+    {
         throw new UnsupportedOperationException(); //TODO
+
     }
 
     @Override
