@@ -26,13 +26,34 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
     }
 
     @Override
-    public Environment.PlcObject visit(Ast.Source ast)
+    public Environment.PlcObject visit(Ast.Source ast) //TODO
     {
+        boolean hasMain = false;
         List<Ast.Field> fields = ast.getFields();
         List<Ast.Method> methods = ast.getMethods();
+        for (Ast.Field field : fields)
+        {
 
+            visit(field);
+        }
+        for (Ast.Method method: methods)
+        {
+            if (method.getName().equals("main"))
+            {
+                System.out.println(method.toString());
+                List<Ast.Stmt> statements = method.getStatements();
+                for (Ast.Stmt statement: statements)
+                {
+                    System.out.println(statement.toString());
+                    //requireType(statement.getClass(), visit(ast));
+                }
+                hasMain = true;
+            }
+            visit(method);
+        }
 
-        throw new UnsupportedOperationException(); //TODO
+        //return Environment.NIL;
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -50,7 +71,10 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
     @Override
     public Environment.PlcObject visit(Ast.Stmt.Expression ast)
     {
-        throw new UnsupportedOperationException(); //TODO
+        visit(ast.getExpression());
+
+        return Environment.NIL;
+        //throw new UnsupportedOperationException(); //TODO
 
     }
 
@@ -169,7 +193,7 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
                             return Environment.create(false);
                         }
                     }
-                    if (((Ast.Expr.Literal) left).getLiteral() instanceof BigDecimal)
+                    if (((Ast.Expr.Literal) left).getLiteral() instanceof BigDecimal )
                     {
                         BigDecimal lefty = (BigDecimal) ((Ast.Expr.Literal) left).getLiteral();
                         BigDecimal righty = (BigDecimal) (((Ast.Expr.Literal) right).getLiteral());
@@ -182,6 +206,7 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
                             return Environment.create(false);
                         }
                     }
+                    System.out.println(ast.getLeft().getClass());
                 }
                 throw new RuntimeException();
             case ">":
@@ -406,8 +431,10 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
     }
 
     @Override
-    public Environment.PlcObject visit(Ast.Expr.Access ast) {
-        throw new UnsupportedOperationException(); //TODO
+    public Environment.PlcObject visit(Ast.Expr.Access ast)  //TODO
+    {
+
+        throw new UnsupportedOperationException();
     }
 
     @Override
