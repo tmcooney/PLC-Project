@@ -57,10 +57,10 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
     }
 
     @Override
-    public Environment.PlcObject visit(Ast.Field ast)
+    public Environment.PlcObject visit(Ast.Field ast)//TODO
     {
 
-        throw new UnsupportedOperationException(); //TODO
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -69,17 +69,17 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
     }
 
     @Override
-    public Environment.PlcObject visit(Ast.Stmt.Expression ast)
+    public Environment.PlcObject visit(Ast.Stmt.Expression ast)//TODO
     {
         visit(ast.getExpression());
 
         return Environment.NIL;
-        //throw new UnsupportedOperationException(); //TODO
+        //throw new UnsupportedOperationException();
 
     }
 
     @Override
-    public Environment.PlcObject visit(Ast.Stmt.Declaration ast)
+    public Environment.PlcObject visit(Ast.Stmt.Declaration ast) //from lecture
     {
         if(ast.getValue().isPresent())
         {
@@ -93,7 +93,8 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
     }
 
     @Override
-    public Environment.PlcObject visit(Ast.Stmt.Assignment ast) {
+    public Environment.PlcObject visit(Ast.Stmt.Assignment ast)
+    {
         throw new UnsupportedOperationException(); //TODO
     }
 
@@ -108,7 +109,7 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
     }
 
     @Override
-    public Environment.PlcObject visit(Ast.Stmt.While ast)
+    public Environment.PlcObject visit(Ast.Stmt.While ast) //in lecture
     {
         while(requireType(Boolean.class, visit(ast.getCondition())))
         {
@@ -434,7 +435,8 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
     public Environment.PlcObject visit(Ast.Expr.Access ast)  //TODO
     {
 
-        throw new UnsupportedOperationException();
+        return Environment.create(ast.getName());
+        //throw new UnsupportedOperationException();
     }
 
     @Override
