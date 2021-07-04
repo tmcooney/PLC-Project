@@ -343,7 +343,6 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
             case "==":
 
                 if (visit(ast.getLeft()).getValue().equals(visit(ast.getRight()).getValue()))
-                //if (((Ast.Expr.Literal) left).getLiteral().equals(((Ast.Expr.Literal) right).getLiteral()))
                 {
                     return Environment.create(true);
                 }
@@ -355,7 +354,6 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
             case "!=":
 
                 if (!visit(ast.getLeft()).getValue().equals(visit(ast.getRight()).getValue()))
-                //if (!(((Ast.Expr.Literal) left).getLiteral().equals(((Ast.Expr.Literal) right).getLiteral())))
                 {
                     return Environment.create(true);
                 }
@@ -364,25 +362,21 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
                     return Environment.create(false);
                 }
             case "+":
-
-                if (visit(ast.getLeft()).getClass().equals(visit(ast.getRight()).getClass()))
-                //if (((Ast.Expr.Literal) left).getLiteral().getClass().equals(((Ast.Expr.Literal) right).getLiteral().getClass()))
+                if (visit(ast.getLeft()).getValue() instanceof String || visit(ast.getRight()).getValue() instanceof String )
                 {
-                    if (visit(ast.getLeft()).getValue() instanceof String)
-                    //if (((Ast.Expr.Literal) left).getLiteral() instanceof String)
-                    {
-                        String string1 = (String)((Ast.Expr.Literal) left).getLiteral();
-                        String string2 = (String)((Ast.Expr.Literal) right).getLiteral();
-                        return Environment.create(string1 + string2);
-                    }
+                    String string1 = (String)visit(ast.getLeft()).getValue();
+                    String string2 = (String)visit(ast.getRight()).getValue();
+                    return Environment.create(string1 + string2);
+                }
+                if (visit(ast.getLeft()).getClass().equals(visit(ast.getRight()).getClass()))
+                {
                     if (visit(ast.getLeft()).getValue() instanceof BigInteger)
-                    //if (((Ast.Expr.Literal) left).getLiteral() instanceof BigInteger)
                     {
                         BigInteger lefty = (BigInteger) visit(ast.getLeft()).getValue();
                         BigInteger righty = (BigInteger) visit(ast.getRight()).getValue();
                         return Environment.create(lefty.add(righty));
                     }
-                    if (((Ast.Expr.Literal) left).getLiteral() instanceof BigDecimal)
+                    if (visit(ast.getLeft()).getValue() instanceof BigDecimal)
                     {
                         BigDecimal lefty = (BigDecimal) ((Ast.Expr.Literal) left).getLiteral();
                         BigDecimal righty = (BigDecimal) (((Ast.Expr.Literal) right).getLiteral());
@@ -393,67 +387,68 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
 
             case "-":
 
-                if (((Ast.Expr.Literal) left).getLiteral().getClass().equals(((Ast.Expr.Literal) right).getLiteral().getClass()))
+                if (visit(ast.getLeft()).getClass().equals(visit(ast.getRight()).getClass()))
                 {
-                    if (((Ast.Expr.Literal) left).getLiteral() instanceof BigInteger)
+                    if (visit(ast.getLeft()).getValue() instanceof BigInteger)
                     {
-                        BigInteger lefty = (BigInteger) ((Ast.Expr.Literal) left).getLiteral();
-                        BigInteger righty = (BigInteger) (((Ast.Expr.Literal) right).getLiteral());
+                        BigInteger lefty = (BigInteger) visit(ast.getLeft()).getValue();
+                        BigInteger righty = (BigInteger) visit(ast.getRight()).getValue();
                         return Environment.create(lefty.subtract(righty));
                     }
-                    if (((Ast.Expr.Literal) left).getLiteral() instanceof BigDecimal)
+                    if (visit(ast.getRight()).getValue() instanceof BigDecimal)
                     {
-                        BigDecimal lefty = (BigDecimal) ((Ast.Expr.Literal) left).getLiteral();
-                        BigDecimal righty = (BigDecimal) (((Ast.Expr.Literal) right).getLiteral());
+                        BigDecimal lefty = (BigDecimal) visit(ast.getLeft()).getValue();
+                        BigDecimal righty = (BigDecimal) visit(ast.getRight()).getValue();
                         return Environment.create(lefty.subtract(righty));
                     }
                 }
                 throw new RuntimeException();
 
             case "*":
-                if (((Ast.Expr.Literal) left).getLiteral().getClass().equals(((Ast.Expr.Literal) right).getLiteral().getClass()))
+                if (visit(ast.getLeft()).getClass().equals(visit(ast.getRight()).getClass()))
                 {
-                    if (((Ast.Expr.Literal) left).getLiteral() instanceof BigInteger)
+                    if (visit(ast.getLeft()).getValue() instanceof BigInteger)
                     {
-                        BigInteger lefty = (BigInteger) ((Ast.Expr.Literal) left).getLiteral();
-                        BigInteger righty = (BigInteger) (((Ast.Expr.Literal) right).getLiteral());
+                        BigInteger lefty = (BigInteger) visit(ast.getLeft()).getValue();
+                        BigInteger righty = (BigInteger) visit(ast.getRight()).getValue();
                         return Environment.create(lefty.multiply(righty));
                     }
-                    if (((Ast.Expr.Literal) left).getLiteral() instanceof BigDecimal)
+                    if (visit(ast.getRight()).getValue() instanceof BigDecimal)
                     {
-                        BigDecimal lefty = (BigDecimal) ((Ast.Expr.Literal) left).getLiteral();
-                        BigDecimal righty = (BigDecimal) (((Ast.Expr.Literal) right).getLiteral());
+                        BigDecimal lefty = (BigDecimal) visit(ast.getLeft()).getValue();
+                        BigDecimal righty = (BigDecimal) visit(ast.getRight()).getValue();
                         return Environment.create(lefty.multiply(righty));
                     }
-
                 }
                 throw new RuntimeException();
 
             case "/":
-                if (((Ast.Expr.Literal) left).getLiteral().getClass().equals(((Ast.Expr.Literal) right).getLiteral().getClass())) //gotta be the same type
+                if (visit(ast.getLeft()).getClass().equals(visit(ast.getRight()).getClass()))
                 {
-                    if (((Ast.Expr.Literal) left).getLiteral() instanceof BigInteger)
+                    if (visit(ast.getLeft()).getValue() instanceof BigInteger)
                     {
-                        BigInteger lefty = (BigInteger) ((Ast.Expr.Literal) left).getLiteral();
-                        BigInteger righty = (BigInteger) (((Ast.Expr.Literal) right).getLiteral());
+                        BigInteger lefty = (BigInteger) visit(ast.getLeft()).getValue();
+                        BigInteger righty = (BigInteger) visit(ast.getRight()).getValue();
                         if (righty.equals(BigInteger.ZERO))
                         {
                             throw new RuntimeException();
                         }
                         return Environment.create(lefty.divide(righty));
                     }
-                    if (((Ast.Expr.Literal) left).getLiteral() instanceof BigDecimal)
+                    if (visit(ast.getRight()).getValue() instanceof BigDecimal)
                     {
-                        BigDecimal lefty = (BigDecimal) ((Ast.Expr.Literal) left).getLiteral();
-                        BigDecimal righty = (BigDecimal) (((Ast.Expr.Literal) right).getLiteral());
+                        BigDecimal lefty = (BigDecimal) visit(ast.getLeft()).getValue();
+                        BigDecimal righty = (BigDecimal) visit(ast.getRight()).getValue();
                         if (righty.equals(BigDecimal.ZERO))
                         {
                             throw new RuntimeException();
                         }
                         return Environment.create(lefty.divide(righty, RoundingMode.HALF_EVEN));
+
                     }
                 }
                 throw new RuntimeException();
+
         }
         throw new RuntimeException();
     }
