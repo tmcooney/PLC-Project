@@ -1,12 +1,12 @@
 package plc.project;
 
+
+import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class Interpreter implements Ast.Visitor<Environment.PlcObject>
 {
@@ -20,7 +20,6 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
             return Environment.NIL;
         });
     }
-
 
     public Scope getScope() {
         return scope;
@@ -70,13 +69,13 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
 
 
     @Override
-    public Environment.PlcObject visit(Ast.Stmt.Expression ast)//TODO
+    public Environment.PlcObject visit(Ast.Stmt.Expression ast)
     {
         if (ast.getExpression() instanceof Ast.Expr.Function)
         {
             if (((Ast.Expr.Function) ast.getExpression()).getName().equals("print"))
             {
-                List list = (((Ast.Expr.Function) ast.getExpression()).getArguments());
+                List<Ast.Expr> list = (((Ast.Expr.Function) ast.getExpression()).getArguments());
                 for (Object lit: list)
                 {
                     Ast.Expr.Literal printMe = (Ast.Expr.Literal)lit;
@@ -89,8 +88,6 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
             }
         }
         return Environment.NIL;
-        //throw new UnsupportedOperationException();
-
     }
 
     @Override
@@ -108,16 +105,18 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
     }
 
     @Override
-    public Environment.PlcObject visit(Ast.Stmt.Assignment ast)
+    public Environment.PlcObject visit(Ast.Stmt.Assignment ast) // TODO
     {
-        if (ast.getReceiver() instanceof Ast.Expr.Access)
+        if (ast.getReceiver() instanceof Ast.Expr.Access) // ensure the receiver is an Ast.Expr.Access
         {
             if (((Ast.Expr.Access) ast.getReceiver()).getReceiver().isPresent())
             {
+                // TODO if that access expression has a receiver, evaluate it and set a field
+                //System.out.println((ast.getValue()));
             }
-            else
+            else //otherwise lookup and set a variable in the current scope
             {
-
+                scope.lookupVariable(((Ast.Expr.Access) ast.getReceiver()).getName()).setValue(visit(ast.getValue()));
             }
             return Environment.NIL;
         }
@@ -125,7 +124,7 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
     }
 
     @Override
-    public Environment.PlcObject visit(Ast.Stmt.If ast)//TODO
+    public Environment.PlcObject visit(Ast.Stmt.If ast)
     {
         try
         {
@@ -155,9 +154,30 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
     @Override
     public Environment.PlcObject visit(Ast.Stmt.For ast)//TODO
     {
-        List<Ast.Expr.Stmt> statements = ast.getStatements();
 
+        if (requireType(Iterable.class, visit(ast.getValue())) != null) // ensure value is type Iterable
+        {
+            try
+            {
+                scope = new Scope(scope);
+                ArrayList list = (ArrayList) visit(ast.getValue()).getValue();
+                for (int i = 0; i < list.size(); i++)
+                {
 
+                }
+
+                scope.defineVariable(ast.getName(), visit(ast.getValue()));
+                for (Ast.Stmt stmt: ast.getStatements())
+                {
+                    visit(stmt);
+                }
+            }
+            finally
+            {
+                scope = scope.getParent();
+            }
+            return Environment.NIL;
+        }
         throw new RuntimeException();
     }
 
@@ -168,7 +188,6 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
         {
             try
             {
-                //ast.getStatements().forEach(this::visit);
                 scope = new Scope(scope);
                 for (Ast.Stmt stmt: ast.getStatements())
                 {
@@ -207,9 +226,8 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
     @Override
     public Environment.PlcObject visit(Ast.Expr.Binary ast)
     {
-        Ast.Expr left = ast.getLeft();
-        Ast.Expr right = ast.getRight();
-
+        Object left = ast.getLeft();
+        Object right = ast.getRight();
         switch (ast.getOperator())
         {
             case "AND":
@@ -217,18 +235,11 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
                 {
                     if (visit(ast.getLeft()).getValue().equals(true)) //if the left operand is true
                     {
-                        if (((Ast.Expr.Literal) right).getLiteral().equals(true))
+                        if (visit(ast.getRight()).getValue().equals(true))
                         {
-                            if (requireType(Boolean.class, visit(ast.getRight()))) //RHS must be bool
+                            if (visit(ast.getRight()).getValue().equals(true)) //if the right operand is true
                             {
-                                if (visit(ast.getRight()).getValue().equals(true)) //if the right operand is true
-                                {
-                                    return Environment.create(true);
-                                }
-                            }
-                            else
-                            {
-                                throw new RuntimeException();
+                                return Environment.create(true);
                             }
                         }
 
@@ -260,10 +271,11 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
                 throw new RuntimeException(); // was not a bool
 
             case "<":
-                if (requireType(Comparable.class, visit(ast.getLeft())) != null) //LHO must be comparable type
+                //if (requireType(Comparable.class, visit(ast.getLeft())) != null) //LHO must be comparable type
                 {
                     if (left.getClass().equals(right.getClass())) // must be the same class as LHO
                     {
+
                         Object lhs= visit(ast.getLeft()).getValue();
                         Object rhs = visit(ast.getRight()).getValue();
                         if (lhs.toString().compareTo(rhs.toString()) == -1)
@@ -378,8 +390,8 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
                     }
                     if (visit(ast.getLeft()).getValue() instanceof BigDecimal)
                     {
-                        BigDecimal lefty = (BigDecimal) ((Ast.Expr.Literal) left).getLiteral();
-                        BigDecimal righty = (BigDecimal) (((Ast.Expr.Literal) right).getLiteral());
+                        BigDecimal lefty = (BigDecimal) (visit(ast.getLeft())).getValue();
+                        BigDecimal righty = (BigDecimal) visit(ast.getRight()).getValue();
                         return Environment.create(lefty.add(righty));
                     }
                 }
@@ -456,12 +468,12 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
     @Override
     public Environment.PlcObject visit(Ast.Expr.Access ast)  //TODO
     {
-        if (ast.getReceiver().isPresent())
+        if (ast.getReceiver().isPresent()) // if the expression has a receiver,
         {
-            scope.defineVariable(ast.getName(), visit(ast.getReceiver().get()));
-            return scope.lookupVariable(ast.getName()).getValue();
+
         }
-        return Environment.create(ast.getName());
+        return scope.lookupVariable(ast.getName()).getValue();
+        //return Environment.create(ast.getName());
 
     }
 
