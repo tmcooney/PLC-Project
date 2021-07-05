@@ -1,6 +1,5 @@
 package plc.project;
 
-
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -152,29 +151,25 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
     }
 
     @Override
-    public Environment.PlcObject visit(Ast.Stmt.For ast)//TODO
+    public Environment.PlcObject visit(Ast.Stmt.For ast)
     {
-
-        if (requireType(Iterable.class, visit(ast.getValue())) != null) // ensure value is type Iterable
+        if(requireType (Iterable.class, visit(ast.getValue())) != null) // ensure value is type Iterable
         {
-            try
+            for (Object obj: (Iterable<?>) visit(ast.getValue()).getValue())
             {
-                scope = new Scope(scope);
-                ArrayList list = (ArrayList) visit(ast.getValue()).getValue();
-                for (int i = 0; i < list.size(); i++)
+                try
                 {
-
+                    scope = new Scope(scope);
+                    scope.defineVariable(ast.getName(), (Environment.PlcObject)obj);
+                    for (Ast.Stmt stmt: ast.getStatements())
+                    {
+                        visit(stmt);
+                    }
                 }
-
-                scope.defineVariable(ast.getName(), visit(ast.getValue()));
-                for (Ast.Stmt stmt: ast.getStatements())
+                finally
                 {
-                    visit(stmt);
+                    scope = scope.getParent();
                 }
-            }
-            finally
-            {
-                scope = scope.getParent();
             }
             return Environment.NIL;
         }
@@ -226,8 +221,6 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
     @Override
     public Environment.PlcObject visit(Ast.Expr.Binary ast)
     {
-        Object left = ast.getLeft();
-        Object right = ast.getRight();
         switch (ast.getOperator())
         {
             case "AND":
@@ -237,12 +230,8 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
                     {
                         if (visit(ast.getRight()).getValue().equals(true))
                         {
-                            if (visit(ast.getRight()).getValue().equals(true)) //if the right operand is true
-                            {
-                                return Environment.create(true);
-                            }
+                            return Environment.create(true);
                         }
-
                     }
                     return Environment.create(false);
                 }
@@ -271,14 +260,24 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
                 throw new RuntimeException(); // was not a bool
 
             case "<":
-                //if (requireType(Comparable.class, visit(ast.getLeft())) != null) //LHO must be comparable type
+                if (requireType(Comparable.class, visit(ast.getLeft())) != null) //LHO must be comparable type
                 {
-                    if (left.getClass().equals(right.getClass())) // must be the same class as LHO
+                    Object lhs= visit(ast.getLeft()).getValue();
+                    Object rhs = visit(ast.getRight()).getValue();
+                    if (lhs instanceof BigInteger && rhs instanceof BigInteger)
                     {
-
-                        Object lhs= visit(ast.getLeft()).getValue();
-                        Object rhs = visit(ast.getRight()).getValue();
-                        if (lhs.toString().compareTo(rhs.toString()) == -1)
+                        if (((BigInteger) lhs).compareTo((BigInteger) rhs) == -1)
+                        {
+                            return Environment.create(true);
+                        }
+                        else
+                        {
+                            return Environment.create(false);
+                        }
+                    }
+                    else if (lhs instanceof BigDecimal && rhs instanceof BigDecimal)
+                    {
+                        if (((BigDecimal) lhs).compareTo((BigDecimal) rhs) == -1)
                         {
                             return Environment.create(true);
                         }
@@ -292,11 +291,22 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
             case ">":
                 if (requireType(Comparable.class, visit(ast.getLeft())) != null) //LHO must be comparable type
                 {
-                    if (left.getClass().equals(right.getClass())) // must be the same class as LHO
+                    Object lhs= visit(ast.getLeft()).getValue();
+                    Object rhs = visit(ast.getRight()).getValue();
+                    if (lhs instanceof BigInteger && rhs instanceof BigInteger)
                     {
-                        Object lhs= visit(ast.getLeft()).getValue();
-                        Object rhs = visit(ast.getRight()).getValue();
-                        if (lhs.toString().compareTo(rhs.toString()) == 1)
+                        if (((BigInteger) lhs).compareTo((BigInteger) rhs) == 1)
+                        {
+                            return Environment.create(true);
+                        }
+                        else
+                        {
+                            return Environment.create(false);
+                        }
+                    }
+                    else if (lhs instanceof BigDecimal && rhs instanceof BigDecimal)
+                    {
+                        if (((BigDecimal) lhs).compareTo((BigDecimal) rhs) == 1)
                         {
                             return Environment.create(true);
                         }
@@ -310,15 +320,22 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
             case "<=":
                 if (requireType(Comparable.class, visit(ast.getLeft())) != null) //LHO must be comparable type
                 {
-                    if (left.getClass().equals(right.getClass())) // must be the same class as LHO
+                    Object lhs= visit(ast.getLeft()).getValue();
+                    Object rhs = visit(ast.getRight()).getValue();
+                    if (lhs instanceof BigInteger && rhs instanceof BigInteger)
                     {
-                        Object lhs= visit(ast.getLeft()).getValue();
-                        Object rhs = visit(ast.getRight()).getValue();
-                        if (lhs.toString().compareTo(rhs.toString()) == 0)
+                        if (((BigInteger) lhs).compareTo((BigInteger) rhs) == -1 || ((BigInteger) lhs).compareTo((BigInteger) rhs) == 0)
                         {
                             return Environment.create(true);
                         }
-                        if (lhs.toString().compareTo(rhs.toString()) == -1)
+                        else
+                        {
+                            return Environment.create(false);
+                        }
+                    }
+                    else if (lhs instanceof BigDecimal && rhs instanceof BigDecimal)
+                    {
+                        if (((BigDecimal) lhs).compareTo((BigDecimal) rhs) == -1 || ((BigDecimal) lhs).compareTo((BigDecimal) rhs) == 0)
                         {
                             return Environment.create(true);
                         }
@@ -333,15 +350,22 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
             case ">=":
                 if (requireType(Comparable.class, visit(ast.getLeft())) != null) //LHO must be comparable type
                 {
-                    if (left.getClass().equals(right.getClass())) // must be the same class as LHO
+                    Object lhs= visit(ast.getLeft()).getValue();
+                    Object rhs = visit(ast.getRight()).getValue();
+                    if (lhs instanceof BigInteger && rhs instanceof BigInteger)
                     {
-                        Object lhs= visit(ast.getLeft()).getValue();
-                        Object rhs = visit(ast.getRight()).getValue();
-                        if (lhs.toString().compareTo(rhs.toString()) == 0)
+                        if (((BigInteger) lhs).compareTo((BigInteger) rhs) == 1 || ((BigInteger) lhs).compareTo((BigInteger) rhs) == 0)
                         {
                             return Environment.create(true);
                         }
-                        if (lhs.toString().compareTo(rhs.toString()) == 1)
+                        else
+                        {
+                            return Environment.create(false);
+                        }
+                    }
+                    else if (lhs instanceof BigDecimal && rhs instanceof BigDecimal)
+                    {
+                        if (((BigDecimal) lhs).compareTo((BigDecimal) rhs) == 1 || ((BigDecimal) lhs).compareTo((BigDecimal) rhs) == 0)
                         {
                             return Environment.create(true);
                         }
@@ -376,23 +400,17 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
             case "+":
                 if (visit(ast.getLeft()).getValue() instanceof String || visit(ast.getRight()).getValue() instanceof String )
                 {
-                    String string1 = (String)visit(ast.getLeft()).getValue();
-                    String string2 = (String)visit(ast.getRight()).getValue();
-                    return Environment.create(string1 + string2);
+                    return Environment.create(visit(ast.getLeft()).getValue() + (String)visit(ast.getRight()).getValue());
                 }
                 if (visit(ast.getLeft()).getClass().equals(visit(ast.getRight()).getClass()))
                 {
                     if (visit(ast.getLeft()).getValue() instanceof BigInteger)
                     {
-                        BigInteger lefty = (BigInteger) visit(ast.getLeft()).getValue();
-                        BigInteger righty = (BigInteger) visit(ast.getRight()).getValue();
-                        return Environment.create(lefty.add(righty));
+                        return Environment.create(((BigInteger) visit(ast.getLeft()).getValue()).add((BigInteger)visit(ast.getRight()).getValue()));
                     }
                     if (visit(ast.getLeft()).getValue() instanceof BigDecimal)
                     {
-                        BigDecimal lefty = (BigDecimal) (visit(ast.getLeft())).getValue();
-                        BigDecimal righty = (BigDecimal) visit(ast.getRight()).getValue();
-                        return Environment.create(lefty.add(righty));
+                        return Environment.create(((BigDecimal) visit(ast.getLeft()).getValue()).add((BigDecimal) visit(ast.getRight()).getValue()));
                     }
                 }
                 throw new RuntimeException();
@@ -403,15 +421,11 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
                 {
                     if (visit(ast.getLeft()).getValue() instanceof BigInteger)
                     {
-                        BigInteger lefty = (BigInteger) visit(ast.getLeft()).getValue();
-                        BigInteger righty = (BigInteger) visit(ast.getRight()).getValue();
-                        return Environment.create(lefty.subtract(righty));
+                        return Environment.create(((BigInteger) visit(ast.getLeft()).getValue()).subtract((BigInteger)visit(ast.getRight()).getValue()));
                     }
                     if (visit(ast.getRight()).getValue() instanceof BigDecimal)
                     {
-                        BigDecimal lefty = (BigDecimal) visit(ast.getLeft()).getValue();
-                        BigDecimal righty = (BigDecimal) visit(ast.getRight()).getValue();
-                        return Environment.create(lefty.subtract(righty));
+                        return Environment.create(((BigDecimal) visit(ast.getLeft()).getValue()).subtract((BigDecimal) visit(ast.getRight()).getValue()));
                     }
                 }
                 throw new RuntimeException();
@@ -421,15 +435,11 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
                 {
                     if (visit(ast.getLeft()).getValue() instanceof BigInteger)
                     {
-                        BigInteger lefty = (BigInteger) visit(ast.getLeft()).getValue();
-                        BigInteger righty = (BigInteger) visit(ast.getRight()).getValue();
-                        return Environment.create(lefty.multiply(righty));
+                        return Environment.create(((BigInteger) visit(ast.getLeft()).getValue()).multiply((BigInteger)visit(ast.getRight()).getValue()));
                     }
                     if (visit(ast.getRight()).getValue() instanceof BigDecimal)
                     {
-                        BigDecimal lefty = (BigDecimal) visit(ast.getLeft()).getValue();
-                        BigDecimal righty = (BigDecimal) visit(ast.getRight()).getValue();
-                        return Environment.create(lefty.multiply(righty));
+                        return Environment.create(((BigDecimal) visit(ast.getLeft()).getValue()).multiply((BigDecimal) visit(ast.getRight()).getValue()));
                     }
                 }
                 throw new RuntimeException();
