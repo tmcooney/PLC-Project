@@ -1,11 +1,11 @@
 package plc.project;
 
-import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Interpreter implements Ast.Visitor<Environment.PlcObject>
 {
@@ -62,10 +62,31 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
     }
 
     @Override
-    public Environment.PlcObject visit(Ast.Method ast) {
-        throw new UnsupportedOperationException(); //TODO
-    }
+    public Environment.PlcObject visit(Ast.Method ast)  //TODO
+    {
+        try
+        {
+            scope = new Scope(scope);
+            scope.defineFunction(ast.getName(), ast.getParameters().size(), args -> {
 
+                for (int i = 0; i < args.size(); i++)
+                {
+                    scope.defineVariable(ast.getParameters().get(i), args.get(i));
+                }
+                for (Ast.Stmt stmt: ast.getStatements())
+                {
+                    visit(stmt);
+                }
+                return Environment.NIL;
+            });
+        }
+        finally
+        {
+            scope = scope.getParent();
+        }
+        return Environment.NIL;
+
+    }
 
     @Override
     public Environment.PlcObject visit(Ast.Stmt.Expression ast)
@@ -104,14 +125,13 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
     }
 
     @Override
-    public Environment.PlcObject visit(Ast.Stmt.Assignment ast) // TODO
+    public Environment.PlcObject visit(Ast.Stmt.Assignment ast)
     {
         if (ast.getReceiver() instanceof Ast.Expr.Access) // ensure the receiver is an Ast.Expr.Access
         {
-            if (((Ast.Expr.Access) ast.getReceiver()).getReceiver().isPresent())
+            if (((Ast.Expr.Access) ast.getReceiver()).getReceiver().isPresent())// if that access expression has a receiver, evaluate it and set a field
             {
-                // TODO if that access expression has a receiver, evaluate it and set a field
-                //System.out.println((ast.getValue()));
+                visit(((Ast.Expr.Access) ast.getReceiver()).getReceiver().get()).setField(((Ast.Expr.Access) ast.getReceiver()).getName(), visit(ast.getValue()));
             }
             else //otherwise lookup and set a variable in the current scope
             {
@@ -177,7 +197,7 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
     }
 
     @Override
-    public Environment.PlcObject visit(Ast.Stmt.While ast) //in lecture
+    public Environment.PlcObject visit(Ast.Stmt.While ast) //from lecture
     {
         while(requireType(Boolean.class, visit(ast.getCondition())))
         {
@@ -198,8 +218,14 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
     }
 
     @Override
-    public Environment.PlcObject visit(Ast.Stmt.Return ast) {
-        throw new UnsupportedOperationException(); //TODO
+    public Environment.PlcObject visit(Ast.Stmt.Return ast)
+    {
+        Environment.PlcObject value = Environment.NIL;
+        if (ast.getValue() != null)
+        {
+            value = visit(ast.getValue());
+        }
+        throw new Return(value);
     }
 
     @Override
@@ -476,33 +502,37 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
     }
 
     @Override
-    public Environment.PlcObject visit(Ast.Expr.Access ast)  //TODO
+    public Environment.PlcObject visit(Ast.Expr.Access ast)
     {
         if (ast.getReceiver().isPresent()) // if the expression has a receiver,
         {
-
+            return visit(ast.getReceiver().get()).getField(ast.getName()).getValue();
         }
         return scope.lookupVariable(ast.getName()).getValue();
-        //return Environment.create(ast.getName());
-
     }
 
     @Override
-    public Environment.PlcObject visit(Ast.Expr.Function ast) //TODO
+    public Environment.PlcObject visit(Ast.Expr.Function ast)
     {
-
-        if (ast.getReceiver().isPresent())
+        List<Environment.PlcObject> arguments = new ArrayList<>();
+        for (Ast.Expr argument: ast.getArguments()) // evaluate the arguments
+        {
+            arguments.add(visit(argument));
+        }
+        if (ast.getReceiver().isPresent()) // if the expression has a receiver
         {
             Environment.PlcObject callee = visit(ast.getReceiver().get());
 
-            return visit(ast.getReceiver().get());
+            return callee.callMethod(ast.getName(), arguments);
         }
         else
         {
-
-            return Environment.create(ast.getName());
+            if (ast.getName().equals("print"))
+            {
+                return Environment.NIL;
+            }
+            return scope.lookupFunction(ast.getName(), ast.getArguments().size()).invoke(arguments);
         }
-        //throw new UnsupportedOperationException();
     }
 
     /**
