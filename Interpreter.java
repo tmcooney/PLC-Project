@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,24 +28,15 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
     @Override
     public Environment.PlcObject visit(Ast.Source ast) //TODO
     {
-        boolean hasMain = false;
-        List<Ast.Field> fields = ast.getFields();
-        List<Ast.Method> methods = ast.getMethods();
-        for (Ast.Field field : fields)
+        for (Ast.Field field : ast.getFields())
         {
             visit(field);
         }
-        for (Ast.Method method: methods)
+        for (Ast.Method method: ast.getMethods())
         {
-            if (method.getName() == ("main"))
-            {
-                System.out.println(method.getName());
-            }
             visit(method);
         }
-
-        //return Environment.NIL;
-        throw new UnsupportedOperationException();
+        return scope.lookupFunction("main", 0).invoke(Arrays.asList());
     }
 
     @Override
@@ -62,7 +54,7 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
     }
 
     @Override
-    public Environment.PlcObject visit(Ast.Method ast)  //TODO
+    public Environment.PlcObject visit(Ast.Method ast)
     {
         scope.defineFunction(ast.getName(), ast.getParameters().size(), args -> {
             try
