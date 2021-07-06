@@ -64,11 +64,10 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
     @Override
     public Environment.PlcObject visit(Ast.Method ast)  //TODO
     {
-        try
-        {
-            scope = new Scope(scope);
-            scope.defineFunction(ast.getName(), ast.getParameters().size(), args -> {
-
+        scope.defineFunction(ast.getName(), ast.getParameters().size(), args -> {
+            try
+            {
+                scope = new Scope(scope); //Set the scope to be a new child of the scope where the function was defined
                 for (int i = 0; i < args.size(); i++)
                 {
                     scope.defineVariable(ast.getParameters().get(i), args.get(i));
@@ -77,15 +76,16 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
                 {
                     visit(stmt);
                 }
+                scope = scope.getParent(); // Remember to restore the scope when finished!
                 return Environment.NIL;
-            });
-        }
-        finally
-        {
-            scope = scope.getParent();
-        }
+            }
+            catch (Return obj)
+            {
+                scope = scope.getParent(); // Remember to restore the scope when finished!
+                return obj.value;
+            }
+        });
         return Environment.NIL;
-
     }
 
     @Override
@@ -220,11 +220,17 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
     @Override
     public Environment.PlcObject visit(Ast.Stmt.Return ast)
     {
+
         Environment.PlcObject value = Environment.NIL;
+
         if (ast.getValue() != null)
         {
+
             value = visit(ast.getValue());
+            //System.out.println(value.getValue());
         }
+        Environment.PlcObject plcValue = Environment.create(value.getValue());
+        //return visit(ast.getValue());
         throw new Return(value);
     }
 
