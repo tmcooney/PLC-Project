@@ -219,10 +219,7 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
         {
 
             value = visit(ast.getValue());
-            //System.out.println(value.getValue());
         }
-        Environment.PlcObject plcValue = Environment.create(value.getValue());
-        //return visit(ast.getValue());
         throw new Return(value);
     }
 
