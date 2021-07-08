@@ -425,11 +425,11 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
                 }
                 if (visit(ast.getLeft()).getClass().equals(visit(ast.getRight()).getClass()))
                 {
-                    if (visit(ast.getLeft()).getValue() instanceof BigInteger)
+                    if (visit(ast.getLeft()).getValue() instanceof BigInteger && visit(ast.getRight()).getValue() instanceof BigInteger)
                     {
                         return Environment.create(((BigInteger) visit(ast.getLeft()).getValue()).add((BigInteger)visit(ast.getRight()).getValue()));
                     }
-                    if (visit(ast.getLeft()).getValue() instanceof BigDecimal)
+                    if (visit(ast.getLeft()).getValue() instanceof BigDecimal && visit(ast.getRight()).getValue() instanceof BigDecimal)
                     {
                         return Environment.create(((BigDecimal) visit(ast.getLeft()).getValue()).add((BigDecimal) visit(ast.getRight()).getValue()));
                     }
@@ -440,11 +440,11 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
 
                 if (visit(ast.getLeft()).getClass().equals(visit(ast.getRight()).getClass()))
                 {
-                    if (visit(ast.getLeft()).getValue() instanceof BigInteger)
+                    if (visit(ast.getLeft()).getValue() instanceof BigInteger && visit(ast.getRight()).getValue() instanceof BigInteger)
                     {
                         return Environment.create(((BigInteger) visit(ast.getLeft()).getValue()).subtract((BigInteger)visit(ast.getRight()).getValue()));
                     }
-                    if (visit(ast.getRight()).getValue() instanceof BigDecimal)
+                    if (visit(ast.getLeft()).getValue() instanceof BigDecimal && visit(ast.getRight()).getValue() instanceof BigDecimal)
                     {
                         return Environment.create(((BigDecimal) visit(ast.getLeft()).getValue()).subtract((BigDecimal) visit(ast.getRight()).getValue()));
                     }
@@ -454,11 +454,11 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
             case "*":
                 if (visit(ast.getLeft()).getClass().equals(visit(ast.getRight()).getClass()))
                 {
-                    if (visit(ast.getLeft()).getValue() instanceof BigInteger)
+                    if (visit(ast.getLeft()).getValue() instanceof BigInteger && visit(ast.getRight()).getValue() instanceof BigInteger)
                     {
                         return Environment.create(((BigInteger) visit(ast.getLeft()).getValue()).multiply((BigInteger)visit(ast.getRight()).getValue()));
                     }
-                    if (visit(ast.getRight()).getValue() instanceof BigDecimal)
+                    if (visit(ast.getLeft()).getValue() instanceof BigDecimal && visit(ast.getRight()).getValue() instanceof BigDecimal)
                     {
                         return Environment.create(((BigDecimal) visit(ast.getLeft()).getValue()).multiply((BigDecimal) visit(ast.getRight()).getValue()));
                     }
@@ -468,7 +468,7 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
             case "/":
                 if (visit(ast.getLeft()).getClass().equals(visit(ast.getRight()).getClass()))
                 {
-                    if (visit(ast.getLeft()).getValue() instanceof BigInteger)
+                    if (visit(ast.getLeft()).getValue() instanceof BigInteger && visit(ast.getRight()).getValue() instanceof BigInteger)
                     {
                         BigInteger lefty = (BigInteger) visit(ast.getLeft()).getValue();
                         BigInteger righty = (BigInteger) visit(ast.getRight()).getValue();
@@ -478,7 +478,7 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
                         }
                         return Environment.create(lefty.divide(righty));
                     }
-                    if (visit(ast.getRight()).getValue() instanceof BigDecimal)
+                    if (visit(ast.getLeft()).getValue() instanceof BigDecimal && visit(ast.getRight()).getValue() instanceof BigDecimal)
                     {
                         BigDecimal lefty = (BigDecimal) visit(ast.getLeft()).getValue();
                         BigDecimal righty = (BigDecimal) visit(ast.getRight()).getValue();
