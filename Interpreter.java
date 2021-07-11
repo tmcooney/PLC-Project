@@ -144,6 +144,7 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
     {
         try
         {
+            scope = new Scope(scope);
             if (requireType(Boolean.class, visit(ast.getCondition())))
             {
                 for (Ast.Stmt stmt: ast.getThenStatements())
