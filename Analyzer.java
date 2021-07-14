@@ -25,8 +25,19 @@ public final class Analyzer implements Ast.Visitor<Void> {
     }
 
     @Override
-    public Void visit(Ast.Source ast) {
-        throw new UnsupportedOperationException();  // TODO
+    public Void visit(Ast.Source ast)
+    {
+        for (Ast.Field field :  ast.getFields())
+        {
+            visit(field);
+        }
+        for (Ast.Method method: ast.getMethods())
+        {
+            visit(method);
+        }
+        requireAssignable(Environment.Type.INTEGER, scope.lookupFunction("main", 0).getReturnType());
+
+        return null;
     }
 
     @Override
@@ -56,8 +67,14 @@ public final class Analyzer implements Ast.Visitor<Void> {
     }
 
     @Override
-    public Void visit(Ast.Stmt.Assignment ast) {
-        throw new UnsupportedOperationException();  // TODO
+    public Void visit(Ast.Stmt.Assignment ast) // TODO
+    {
+        if (!(ast.getReceiver() instanceof Ast.Expr.Access))
+        {
+            throw new RuntimeException();
+
+        }
+        throw new UnsupportedOperationException();
     }
 
     @Override
