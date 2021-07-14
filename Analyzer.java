@@ -61,13 +61,64 @@ public final class Analyzer implements Ast.Visitor<Void> {
     }
 
     @Override
-    public Void visit(Ast.Stmt.If ast) {
-        throw new UnsupportedOperationException();  // TODO
+    public Void visit(Ast.Stmt.If ast)
+    {
+        visit(ast.getCondition());
+        requireAssignable(Environment.Type.BOOLEAN, ast.getCondition().getType());
+        if (ast.getThenStatements().isEmpty())
+        {
+            throw new RuntimeException();
+        }
+        try
+        {
+            scope = new Scope(scope);
+            for (Ast.Stmt stmt :  ast.getThenStatements())
+            {
+                visit(stmt);
+            }
+        }
+        finally
+        {
+            scope = scope.getParent();
+        }
+        try
+        {
+            scope = new Scope(scope);
+            for (Ast.Stmt stmt :  ast.getElseStatements())
+            {
+                visit(stmt);
+            }
+        }
+        finally
+        {
+            scope = scope.getParent();
+        }
+        return null;
     }
 
     @Override
-    public Void visit(Ast.Stmt.For ast) {
-        throw new UnsupportedOperationException();  // TODO
+    public Void visit(Ast.Stmt.For ast)
+    {
+        visit(ast.getValue());
+        requireAssignable(Environment.Type.INTEGER_ITERABLE, ast.getValue().getType());
+        if (ast.getStatements().isEmpty())
+        {
+            throw new RuntimeException();
+        }
+        try
+        {
+            scope = new Scope(scope);
+            scope.defineVariable(ast.getName(), ast.getName(), Environment.Type.INTEGER, Environment.NIL);
+            for (Ast.Stmt stmt :  ast.getStatements())
+            {
+                visit(stmt);
+            }
+        }
+        finally
+        {
+            scope = scope.getParent();
+        }
+        return null;
     }
 
     @Override
