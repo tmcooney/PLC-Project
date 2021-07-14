@@ -79,10 +79,7 @@ public final class Parser {
                     return new Ast.Field(name, typeName, Optional.empty());
                     //return new Ast.Field(name, Optional.empty()); // old return
                 }
-
-
             }
-
         }
         throw new ParseException("invalid field", tokens.get(1).getIndex());
 
@@ -133,7 +130,6 @@ public final class Parser {
                             else
                             {
                                 int index = (tokens.get(1).getIndex() + tokens.get(1).getLiteral().length());
-                                System.out.println(index);
                                 throw new ParseException("Method Missing \"END\"", index);
                             }
                         }
@@ -142,7 +138,6 @@ public final class Parser {
                             if (tokens.has(0))
                             {
                                 int index = (tokens.get(0).getIndex());// + tokens.get(-1).getLiteral().length());
-                                System.out.println(index);
                                 throw new ParseException("Expected \"DO\"", index);
                             }
                             else
@@ -188,7 +183,7 @@ public final class Parser {
             }
         }
 
-        System.out.println(tokens.get(1).getIndex() + tokens.get(1).getLiteral().length());
+        //System.out.println(tokens.get(1).getIndex() + tokens.get(1).getLiteral().length());
         throw new ParseException("Invalid Method", tokens.get(1).getIndex());
     }
 
