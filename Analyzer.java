@@ -114,8 +114,12 @@ public final class Analyzer implements Ast.Visitor<Void> {
         throw new UnsupportedOperationException();  // TODO
     }
 
-    public static void requireAssignable(Environment.Type target, Environment.Type type) {
-        throw new UnsupportedOperationException();  // TODO
+    public static void requireAssignable(Environment.Type target, Environment.Type type)
+    {
+        if (target != type)
+        {
+            throw new RuntimeException();
+        }
     }
 
 }
