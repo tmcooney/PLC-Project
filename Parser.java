@@ -93,6 +93,8 @@ public final class Parser {
 
         List<String> parameters = new ArrayList<>();
         List<Ast.Stmt> statements = new ArrayList<>();
+        List<String> parameterTypes = new ArrayList<>();
+        Optional<String> returnTypeName = null;
         if(match("DEF")) {
             if (match(Token.Type.IDENTIFIER))
             {
@@ -101,21 +103,52 @@ public final class Parser {
                     String name = tokens.get(-2).getLiteral();
                     if(match(Token.Type.IDENTIFIER)) // if there is something in the paren
                     {
-                        while(match(","))
+                        if(match(":", Token.Type.IDENTIFIER))
                         {
-                            if(match(Token.Type.IDENTIFIER))
+                            parameters.add(tokens.get(-3).getLiteral());
+                            parameterTypes.add(tokens.get(-1).getLiteral());
+
+                            while(match(","))
                             {
-                                parameters.add(tokens.get(-1).getLiteral());
+                                if(match(Token.Type.IDENTIFIER))
+                                {
+                                    if (match(":", Token.Type.IDENTIFIER))
+                                    {
+                                        parameters.add(tokens.get(-3).getLiteral());
+                                        parameterTypes.add(tokens.get(-1).getLiteral());
+                                    }
+                                    else
+                                    {
+                                        throw new ParseException("expected type", tokens.get(0).getIndex());
+                                    }
+
+                                }
+                                else
+                                {
+                                    throw new ParseException("invalid identifier", tokens.get(0).getIndex());
+                                }
+                            }
+                        }
+                        else
+                        {
+                            throw new ParseException("expected type", tokens.get(0).getIndex());
+                        }
+
+                    }
+                    if (match(")"))
+                    {
+                        if (match(":"))
+                        {
+                            if (match(Token.Type.IDENTIFIER))
+                            {
+                                returnTypeName = Optional.ofNullable(tokens.get(-1).getLiteral());
                             }
                             else
                             {
                                 throw new ParseException("invalid identifier", tokens.get(0).getIndex());
                             }
-                        }
-                    }
-                    if (match(")"))
-                    {
 
+                        }
                         if (match("DO"))
                         {
 
@@ -125,7 +158,8 @@ public final class Parser {
                             }
                             if (match("END") && !tokens.has(0))
                             {
-                                return new Ast.Method(name, parameters, statements);
+                                return new Ast.Method(name, parameters, parameterTypes, returnTypeName, statements);
+                                //return new Ast.Method(name, parameters, statements);
                             }
                             else
                             {
