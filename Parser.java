@@ -1,5 +1,6 @@
 package plc.project;
 
+import javax.swing.text.html.Option;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -55,23 +56,33 @@ public final class Parser {
         if(match("LET", Token.Type.IDENTIFIER))
         {
             String name = tokens.get(-1).getLiteral();
-            if(match("="))
+            if (match(":", Token.Type.IDENTIFIER))
             {
-                Ast.Expr expr = parseExpression();
-                if(match(";"))
+                String typeName = tokens.get(-1).getLiteral();
+
+                if(match("="))
                 {
-                    return new Ast.Field(name, Optional.of(expr));
+                    Ast.Expr expr = parseExpression();
+                    if(match(";"))
+                    {
+                        return new Ast.Field(name, typeName, Optional.of(expr));
+                        //return new Ast.Field(name, Optional.of(expr)); // old return statement
+                    }
+                    else
+                    {
+                        int index = (tokens.get(-1).getIndex()) + tokens.get(-1).getLiteral().length();
+                        throw new ParseException("Field Missing Semi-Colon", index);
+                    }
                 }
-                else
+                else if(match(";"))
                 {
-                    int index = (tokens.get(-1).getIndex()) + tokens.get(-1).getLiteral().length();
-                    throw new ParseException("Field Missing Semi-Colon", index);
+                    return new Ast.Field(name, typeName, Optional.empty());
+                    //return new Ast.Field(name, Optional.empty()); // old return
                 }
+
+
             }
-            else if(match(";"))
-            {
-                return new Ast.Field(name, Optional.empty());
-            }
+
         }
         throw new ParseException("invalid field", tokens.get(1).getIndex());
 
