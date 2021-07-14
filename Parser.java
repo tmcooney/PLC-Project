@@ -1,6 +1,6 @@
 package plc.project;
 
-import javax.swing.text.html.Option;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -94,7 +94,7 @@ public final class Parser {
         List<String> parameters = new ArrayList<>();
         List<Ast.Stmt> statements = new ArrayList<>();
         List<String> parameterTypes = new ArrayList<>();
-        Optional<String> returnTypeName = null;
+        Optional<String> returnTypeName = Optional.empty();
         if(match("DEF")) {
             if (match(Token.Type.IDENTIFIER))
             {
@@ -286,12 +286,26 @@ public final class Parser {
         if(match("LET", Token.Type.IDENTIFIER))
         {
             String name = tokens.get(-1).getLiteral();
+            Optional<String> typeName = Optional.empty();
+            if (match(":"))
+            {
+                if (match(Token.Type.IDENTIFIER))
+                {
+                    typeName = Optional.ofNullable(tokens.get(-1).getLiteral());
+                }
+                else
+                {
+                    throw new ParseException("invalid type name identifier", tokens.get(0).getIndex());
+                }
+            }
+
             if(match("="))
             {
                 Ast.Expr expr = parseExpression();
                 if(match(";"))
                 {
-                    return new Ast.Stmt.Declaration(name, Optional.of(expr));
+                    return new Ast.Stmt.Declaration(name, typeName, Optional.of(expr));
+                    //return new Ast.Stmt.Declaration(name, Optional.of(expr));
                 }
                 else
                 {
@@ -301,7 +315,8 @@ public final class Parser {
             }
             if(match(";"))
             {
-                return new Ast.Stmt.Declaration(name, Optional.empty());
+                return new Ast.Stmt.Declaration(name, typeName, Optional.empty());
+                //return new Ast.Stmt.Declaration(name, Optional.empty());
             }
             else
             {
