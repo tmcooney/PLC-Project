@@ -40,8 +40,14 @@ public final class Analyzer implements Ast.Visitor<Void> {
     }
 
     @Override
-    public Void visit(Ast.Stmt.Expression ast) {
-        throw new UnsupportedOperationException();  // TODO
+    public Void visit(Ast.Stmt.Expression ast) // TODO
+    {
+        visit(ast.getExpression());
+        if (!(ast.getExpression() instanceof Ast.Expr.Function))
+        {
+            throw new RuntimeException();
+        }
+        return null;
     }
 
     @Override
@@ -116,10 +122,25 @@ public final class Analyzer implements Ast.Visitor<Void> {
 
     public static void requireAssignable(Environment.Type target, Environment.Type type)
     {
-        if (target != type)
+        if (target.equals(type)) // types are the same; assignment can be performed
         {
-            throw new RuntimeException();
+            return;
         }
+        if (target.equals(Environment.Type.ANY))
+        {
+            return;
+        }
+        if (target.equals(Environment.Type.COMPARABLE))
+        {
+            if (type.equals(Environment.Type.INTEGER)
+                    || type.equals(Environment.Type.DECIMAL)
+                    || type.equals(Environment.Type.CHARACTER)
+                    || type.equals(Environment.Type.STRING))
+            {
+                return;
+            }
+        }
+        throw new RuntimeException();
     }
 
 }
