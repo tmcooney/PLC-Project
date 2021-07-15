@@ -1,10 +1,14 @@
 package plc.project;
 
+import jdk.nashorn.internal.codegen.types.Type;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static java.lang.Boolean.TYPE;
 
 /**
  * See the specification for information about what the different visit
@@ -41,8 +45,11 @@ public final class Analyzer implements Ast.Visitor<Void> {
     }
 
     @Override
-    public Void visit(Ast.Field ast) {
-        throw new UnsupportedOperationException();  // TODO
+    public Void visit(Ast.Field ast)
+    {
+        visit(ast.getValue().get());
+        ast.setVariable(scope.defineVariable(ast.getName(), ast.getName(), ast.getVariable().getType(), Environment.NIL));
+        return null;
     }
 
     @Override
@@ -164,8 +171,49 @@ public final class Analyzer implements Ast.Visitor<Void> {
     }
 
     @Override
-    public Void visit(Ast.Expr.Literal ast) {
-        throw new UnsupportedOperationException();  // TODO
+    public Void visit(Ast.Expr.Literal ast)
+    {
+        if (ast.getLiteral() instanceof Boolean)
+        {
+            ast.setType(Environment.Type.BOOLEAN);
+            return null;
+        }
+        if (ast.getLiteral() instanceof Character )
+        {
+            ast.setType(Environment.Type.CHARACTER);
+            return null;
+        }
+        if (ast.getLiteral() instanceof String)
+        {
+            ast.setType(Environment.Type.STRING);
+            return null;
+        }
+        if(ast.getLiteral() == null)
+        {
+            ast.setType(Environment.Type.NIL);
+            return null;
+        }
+        if (ast.getLiteral() instanceof BigInteger)
+        {
+            BigInteger max = BigInteger.valueOf(Integer.MAX_VALUE);
+            BigInteger min = BigInteger.valueOf(Integer.MIN_VALUE);
+            if (((BigInteger) ast.getLiteral()).compareTo(min) < 0 || ((BigInteger) ast.getLiteral()).compareTo(max) > 0)
+            {
+                throw new RuntimeException();
+            }
+            ast.setType(Environment.Type.INTEGER);
+            return null;
+        }
+        if (ast.getLiteral() instanceof BigDecimal)
+        {
+            if (!Double.isFinite(((BigDecimal) ast.getLiteral()).doubleValue())) // if the value is out of range
+            {
+                throw new RuntimeException();
+            }
+            ast.setType(Environment.Type.DECIMAL);
+            return null;
+        }
+        throw new RuntimeException();
     }
 
     @Override
