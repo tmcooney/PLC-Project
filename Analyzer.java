@@ -1,14 +1,10 @@
 package plc.project;
 
-import jdk.nashorn.internal.codegen.types.Type;
-
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static java.lang.Boolean.TYPE;
 
 /**
  * See the specification for information about what the different visit
@@ -79,9 +75,11 @@ public final class Analyzer implements Ast.Visitor<Void> {
         if (!(ast.getReceiver() instanceof Ast.Expr.Access))
         {
             throw new RuntimeException();
-
         }
-        throw new UnsupportedOperationException();
+        requireAssignable(ast.getReceiver().getType(), ast.getValue().getType());
+        //requireAssignable(ast.getValue().getType(), ast.getReceiver().getType());
+        
+        return null;
     }
 
     @Override
@@ -197,6 +195,7 @@ public final class Analyzer implements Ast.Visitor<Void> {
         {
             BigInteger max = BigInteger.valueOf(Integer.MAX_VALUE);
             BigInteger min = BigInteger.valueOf(Integer.MIN_VALUE);
+            //if this thing is out of range
             if (((BigInteger) ast.getLiteral()).compareTo(min) < 0 || ((BigInteger) ast.getLiteral()).compareTo(max) > 0)
             {
                 throw new RuntimeException();
@@ -222,13 +221,91 @@ public final class Analyzer implements Ast.Visitor<Void> {
     }
 
     @Override
-    public Void visit(Ast.Expr.Binary ast) {
-        throw new UnsupportedOperationException();  // TODO
+    public Void visit(Ast.Expr.Binary ast)
+    {
+        visit(ast.getLeft());
+        visit(ast.getRight());
+        String operator = ast.getOperator();
+        if (operator.equals("AND") || operator.equals("OR"))
+        {
+            if (ast.getLeft().getType().equals(Environment.Type.BOOLEAN) && ast.getRight().getType().equals(Environment.Type.BOOLEAN))
+            {
+                ast.setType(Environment.Type.BOOLEAN);
+                return null;
+            }
+            else
+            {
+                throw new RuntimeException();
+            }
+        }
+        if (operator.equals("<")
+                || operator.equals("<=")
+                || operator.equals(">")
+                || operator.equals(">=")
+                || operator.equals("==")
+                || operator.equals("!="))
+        {
+            if (ast.getLeft().getType().equals(Environment.Type.COMPARABLE) && ast.getRight().getType().equals(Environment.Type.COMPARABLE))
+            {
+                ast.setType(Environment.Type.BOOLEAN);
+                return null;
+            }
+            else
+            {
+                throw new RuntimeException();
+            }
+        }
+        if (operator.equals("+"))
+        {
+            if (ast.getLeft().getType().equals(Environment.Type.STRING) || ast.getRight().getType().equals(Environment.Type.STRING))
+            {
+                ast.setType(Environment.Type.STRING);
+                return null;
+            }
+            if (ast.getLeft().getType().equals(Environment.Type.INTEGER) && ast.getRight().getType().equals(Environment.Type.INTEGER))
+            {
+                ast.setType(Environment.Type.INTEGER);
+                return null;
+            }
+            if (ast.getLeft().getType().equals(Environment.Type.DECIMAL) && ast.getRight().getType().equals(Environment.Type.DECIMAL))
+            {
+                ast.setType(Environment.Type.DECIMAL);
+                return null;
+            }
+            throw new RuntimeException();
+        }
+        if (operator.equals("-") || operator.equals("*") || operator.equals("/"))
+        {
+            if (ast.getLeft().getType().equals(Environment.Type.INTEGER) && ast.getRight().getType().equals(Environment.Type.INTEGER))
+            {
+                ast.setType(Environment.Type.INTEGER);
+                return null;
+            }
+            if (ast.getLeft().getType().equals(Environment.Type.DECIMAL) || ast.getRight().getType().equals(Environment.Type.DECIMAL))
+            {
+                ast.setType(Environment.Type.DECIMAL);
+                return null;
+            }
+            throw new RuntimeException();
+        }
+        throw new RuntimeException();
     }
 
     @Override
-    public Void visit(Ast.Expr.Access ast) {
-        throw new UnsupportedOperationException();  // TODO
+    public Void visit(Ast.Expr.Access ast) // TODO
+    {
+        //visit(ast.getReceiver().get());
+        if (ast.getReceiver().isPresent())
+        {
+            Ast.Expr.Access expr = (Ast.Expr.Access)ast.getReceiver().get();
+
+            Environment.Variable var = scope.lookupVariable(expr.getName());
+        }
+        else
+        {
+            ast.setVariable(scope.lookupVariable(ast.getName()));
+        }
+        return null;
     }
 
     @Override
