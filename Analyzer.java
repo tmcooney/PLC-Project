@@ -45,11 +45,12 @@ public final class Analyzer implements Ast.Visitor<Void> {
     public Void visit(Ast.Field ast)
     {
 
+
         if (ast.getValue().isPresent())
         {
-
             requireAssignable(ast.getVariable().getType(), ast.getValue().get().getType());
             visit(ast.getValue().get());
+
         }
 
         ast.setVariable(scope.defineVariable(ast.getName(), ast.getName(), scope.lookupVariable(ast.getName()).getType(), Environment.NIL));
@@ -88,13 +89,14 @@ public final class Analyzer implements Ast.Visitor<Void> {
     @Override
     public Void visit(Ast.Stmt.Assignment ast) // TODO
     {
-        if (!(ast.getReceiver() instanceof Ast.Expr.Access))
+        visit(ast.getValue());
+        visit(ast.getReceiver());
+        if (!(ast.getReceiver() instanceof Ast.Expr.Access)) // if the receiver is not an access expression
         {
             throw new RuntimeException();
         }
         requireAssignable(ast.getReceiver().getType(), ast.getValue().getType());
         //requireAssignable(ast.getValue().getType(), ast.getReceiver().getType());
-        
         return null;
     }
 
