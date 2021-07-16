@@ -79,15 +79,23 @@ public final class Analyzer implements Ast.Visitor<Void> {
 
         if (ast.getTypeName().isPresent())
         {
-           Object type = ast.getTypeName();
-           //ast.setVariable(scope.defineVariable(ast.getName(), ast.getName(), , Environment.NIL));
+            ast.setVariable(scope.defineVariable(ast.getName(), ast.getName(), Environment.getType(ast.getTypeName().get()), Environment.NIL));
+            return null;
         }
-
-        throw new UnsupportedOperationException();  // TODO
+        else if (ast.getValue().isPresent())
+        {
+            visit(ast.getValue().get());
+            ast.setVariable(scope.defineVariable(ast.getName(), ast.getName(), ast.getValue().get().getType(), Environment.NIL));
+            return null;
+        }
+        else
+        {
+            throw new RuntimeException();
+        }
     }
 
     @Override
-    public Void visit(Ast.Stmt.Assignment ast) // TODO
+    public Void visit(Ast.Stmt.Assignment ast)
     {
         visit(ast.getValue());
         visit(ast.getReceiver());
