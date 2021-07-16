@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -43,8 +44,15 @@ public final class Analyzer implements Ast.Visitor<Void> {
     @Override
     public Void visit(Ast.Field ast)
     {
-        visit(ast.getValue().get());
-        ast.setVariable(scope.defineVariable(ast.getName(), ast.getName(), ast.getVariable().getType(), Environment.NIL));
+
+        if (ast.getValue().isPresent())
+        {
+
+            requireAssignable(ast.getVariable().getType(), ast.getValue().get().getType());
+            visit(ast.getValue().get());
+        }
+
+        ast.setVariable(scope.defineVariable(ast.getName(), ast.getName(), scope.lookupVariable(ast.getName()).getType(), Environment.NIL));
         return null;
     }
 
@@ -54,7 +62,7 @@ public final class Analyzer implements Ast.Visitor<Void> {
     }
 
     @Override
-    public Void visit(Ast.Stmt.Expression ast) // TODO
+    public Void visit(Ast.Stmt.Expression ast)
     {
         visit(ast.getExpression());
         if (!(ast.getExpression() instanceof Ast.Expr.Function))
@@ -65,7 +73,15 @@ public final class Analyzer implements Ast.Visitor<Void> {
     }
 
     @Override
-    public Void visit(Ast.Stmt.Declaration ast) {
+    public Void visit(Ast.Stmt.Declaration ast)
+    {
+
+        if (ast.getTypeName().isPresent())
+        {
+           Object type = ast.getTypeName();
+           //ast.setVariable(scope.defineVariable(ast.getName(), ast.getName(), , Environment.NIL));
+        }
+
         throw new UnsupportedOperationException();  // TODO
     }
 
@@ -216,8 +232,14 @@ public final class Analyzer implements Ast.Visitor<Void> {
     }
 
     @Override
-    public Void visit(Ast.Expr.Group ast) {
-        throw new UnsupportedOperationException();  // TODO
+    public Void visit(Ast.Expr.Group ast)
+    {
+        if (ast.getExpression() instanceof Ast.Expr.Binary)
+        {
+            ast.setType(ast.getExpression().getType());
+            return null;
+        }
+        throw new RuntimeException();
     }
 
     @Override
