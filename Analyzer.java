@@ -77,14 +77,21 @@ public final class Analyzer implements Ast.Visitor<Void> {
     public Void visit(Ast.Stmt.Declaration ast)
     {
 
+
         if (ast.getTypeName().isPresent())
         {
+            if (ast.getValue().isPresent())
+            {
+                visit(ast.getValue().get());
+                requireAssignable(Environment.getType(ast.getTypeName().get()), ast.getValue().get().getType());
+            }
             ast.setVariable(scope.defineVariable(ast.getName(), ast.getName(), Environment.getType(ast.getTypeName().get()), Environment.NIL));
             return null;
         }
         else if (ast.getValue().isPresent())
         {
             visit(ast.getValue().get());
+
             ast.setVariable(scope.defineVariable(ast.getName(), ast.getName(), ast.getValue().get().getType(), Environment.NIL));
             return null;
         }
