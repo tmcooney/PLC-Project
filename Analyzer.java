@@ -316,12 +316,10 @@ public final class Analyzer implements Ast.Visitor<Void> {
     @Override
     public Void visit(Ast.Expr.Access ast) // TODO
     {
-        //visit(ast.getReceiver().get());
         if (ast.getReceiver().isPresent())
         {
-            Ast.Expr.Access expr = (Ast.Expr.Access)ast.getReceiver().get();
-
-            Environment.Variable var = scope.lookupVariable(expr.getName());
+            visit(ast.getReceiver().get());
+            ast.setVariable( ((Ast.Expr.Access) ast.getReceiver().get()).getVariable().getType().getField(ast.getName()));
         }
         else
         {
