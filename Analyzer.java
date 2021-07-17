@@ -2,6 +2,7 @@ package plc.project;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -58,8 +59,36 @@ public final class Analyzer implements Ast.Visitor<Void> {
     }
 
     @Override
-    public Void visit(Ast.Method ast) {
-        throw new UnsupportedOperationException();  // TODO
+    public Void visit(Ast.Method ast)
+    {
+        Environment.Type returnType;
+        List<Environment.Type> typeNames = new ArrayList<>();
+        for (String type :  ast.getParameterTypeNames())
+        {
+            typeNames.add(Environment.getType(type));
+        }
+        if (!ast.getReturnTypeName().isPresent()) // if the return type is not present
+        {
+            returnType = Environment.Type.NIL; // the return type wil be Nil.
+        }
+        else //return type is present
+        {
+            returnType = Environment.getType(ast.getReturnTypeName().get());
+        }
+        ast.setFunction(scope.defineFunction(ast.getName(), ast.getName(),typeNames, returnType, args -> Environment.NIL));
+        try
+        {
+            scope = new Scope(scope);
+            for (Ast.Stmt stmt :  ast.getStatements())
+            {
+                visit(stmt);
+            }
+        }
+        finally
+        {
+            scope = scope.getParent();
+        }
+        return null;
     }
 
     @Override
@@ -76,8 +105,6 @@ public final class Analyzer implements Ast.Visitor<Void> {
     @Override
     public Void visit(Ast.Stmt.Declaration ast)
     {
-
-
         if (ast.getTypeName().isPresent())
         {
             if (ast.getValue().isPresent())
@@ -197,8 +224,10 @@ public final class Analyzer implements Ast.Visitor<Void> {
     }
 
     @Override
-    public Void visit(Ast.Stmt.Return ast) {
-        throw new UnsupportedOperationException();  // TODO
+    public Void visit(Ast.Stmt.Return ast)  // TODO
+    {
+        //throw new RuntimeException();
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -346,8 +375,18 @@ public final class Analyzer implements Ast.Visitor<Void> {
     }
 
     @Override
-    public Void visit(Ast.Expr.Function ast) {
-        throw new UnsupportedOperationException();  // TODO
+    public Void visit(Ast.Expr.Function ast)
+    {
+        if (ast.getReceiver().isPresent()) // the function is a method of the receiver if present
+        {
+            visit(ast.getReceiver().get());
+            ast.setFunction(ast.getReceiver().get().getType().getMethod(ast.getName(), ast.getArguments().size()));
+        }
+        else // otherwise it is a function in the current scope
+        {
+            ast.setFunction(scope.lookupFunction(ast.getName(), ast.getArguments().size()));
+        }
+        return null;
     }
 
     public static void requireAssignable(Environment.Type target, Environment.Type type)
