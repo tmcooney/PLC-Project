@@ -1,11 +1,11 @@
 package plc.project;
 
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -45,15 +45,11 @@ public final class Analyzer implements Ast.Visitor<Void> {
     @Override
     public Void visit(Ast.Field ast)
     {
-
-
         if (ast.getValue().isPresent())
         {
             requireAssignable(ast.getVariable().getType(), ast.getValue().get().getType());
             visit(ast.getValue().get());
-
         }
-
         ast.setVariable(scope.defineVariable(ast.getName(), ast.getName(), scope.lookupVariable(ast.getName()).getType(), Environment.NIL));
         return null;
     }
@@ -63,10 +59,12 @@ public final class Analyzer implements Ast.Visitor<Void> {
     {
         Environment.Type returnType;
         List<Environment.Type> typeNames = new ArrayList<>();
+
         for (String type :  ast.getParameterTypeNames())
         {
             typeNames.add(Environment.getType(type));
         }
+
         if (!ast.getReturnTypeName().isPresent()) // if the return type is not present
         {
             returnType = Environment.Type.NIL; // the return type wil be Nil.
@@ -74,15 +72,29 @@ public final class Analyzer implements Ast.Visitor<Void> {
         else //return type is present
         {
             returnType = Environment.getType(ast.getReturnTypeName().get());
+
         }
-        ast.setFunction(scope.defineFunction(ast.getName(), ast.getName(),typeNames, returnType, args -> Environment.NIL));
+        ast.setFunction(scope.defineFunction(ast.getName(), ast.getName(), typeNames, returnType, args -> Environment.NIL));
         try
         {
+
             scope = new Scope(scope);
-            for (Ast.Stmt stmt :  ast.getStatements())
+
+            int index = 0;
+            //int index = 1;
+            for (String parameter: ast.getParameters())
+            {
+                scope.defineVariable(parameter, Environment.create(ast.getParameterTypeNames().get(index)));
+                index += 1;
+            }
+            for (Ast.Stmt stmt : ast.getStatements())
             {
                 visit(stmt);
             }
+        }
+        catch (Exception exception)
+        {
+            throw exception;
         }
         finally
         {
@@ -118,7 +130,6 @@ public final class Analyzer implements Ast.Visitor<Void> {
         else if (ast.getValue().isPresent())
         {
             visit(ast.getValue().get());
-
             ast.setVariable(scope.defineVariable(ast.getName(), ast.getName(), ast.getValue().get().getType(), Environment.NIL));
             return null;
         }
@@ -226,13 +237,15 @@ public final class Analyzer implements Ast.Visitor<Void> {
     @Override
     public Void visit(Ast.Stmt.Return ast)  // TODO
     {
-        //throw new RuntimeException();
-        throw new UnsupportedOperationException();
+        visit(ast.getValue());
+        System.out.println(ast.getValue().getType());
+        return null;
     }
 
     @Override
     public Void visit(Ast.Expr.Literal ast)
     {
+
         if (ast.getLiteral() instanceof Boolean)
         {
             ast.setType(Environment.Type.BOOLEAN);
@@ -253,10 +266,12 @@ public final class Analyzer implements Ast.Visitor<Void> {
             ast.setType(Environment.Type.NIL);
             return null;
         }
-        if (ast.getLiteral() instanceof BigInteger)
+        if (ast.getLiteral() instanceof BigInteger)// || ast.getLiteral() instanceof Integer)
         {
+
             BigInteger max = BigInteger.valueOf(Integer.MAX_VALUE);
             BigInteger min = BigInteger.valueOf(Integer.MIN_VALUE);
+
             //if this thing is out of range
             if (((BigInteger) ast.getLiteral()).compareTo(min) < 0 || ((BigInteger) ast.getLiteral()).compareTo(max) > 0)
             {
@@ -293,6 +308,7 @@ public final class Analyzer implements Ast.Visitor<Void> {
     {
         visit(ast.getLeft());
         visit(ast.getRight());
+
         String operator = ast.getOperator();
         if (operator.equals("AND") || operator.equals("OR"))
         {
@@ -340,7 +356,6 @@ public final class Analyzer implements Ast.Visitor<Void> {
                 ast.setType(Environment.Type.DECIMAL);
                 return null;
             }
-            throw new RuntimeException();
         }
         if (operator.equals("-") || operator.equals("*") || operator.equals("/"))
         {
@@ -354,13 +369,17 @@ public final class Analyzer implements Ast.Visitor<Void> {
                 ast.setType(Environment.Type.DECIMAL);
                 return null;
             }
-            throw new RuntimeException();
+        }
+        //if (ast.getLeft().getType().equals(Environment.Type.ANY) || ast.getRight().getType().equals(Environment.Type.ANY))
+        {
+            //ast.setType(Environment.Type.ANY);
+            //return null;
         }
         throw new RuntimeException();
     }
 
     @Override
-    public Void visit(Ast.Expr.Access ast) // TODO
+    public Void visit(Ast.Expr.Access ast)
     {
         if (ast.getReceiver().isPresent())
         {
@@ -377,15 +396,32 @@ public final class Analyzer implements Ast.Visitor<Void> {
     @Override
     public Void visit(Ast.Expr.Function ast)
     {
+        for (Ast.Expr argument: ast.getArguments())
+        {
+            visit(argument);
+        }
+        Environment.Function function;
         if (ast.getReceiver().isPresent()) // the function is a method of the receiver if present
         {
             visit(ast.getReceiver().get());
-            ast.setFunction(ast.getReceiver().get().getType().getMethod(ast.getName(), ast.getArguments().size()));
+            function = ast.getReceiver().get().getType().getMethod(ast.getName(), ast.getArguments().size());
         }
         else // otherwise it is a function in the current scope
         {
-            ast.setFunction(scope.lookupFunction(ast.getName(), ast.getArguments().size()));
+            function = scope.lookupFunction(ast.getName(), ast.getArguments().size());
         }
+
+        if (ast.getArguments().size() > 0)
+        {
+            int index = 1;
+            for (int i = 1; i < ast.getArguments().size(); i++)
+            {
+                requireAssignable(function.getParameterTypes().get(index), ast.getArguments().get(i).getType());
+                //requireAssignable(ast.getArguments().get(i).getType(), function.getParameterTypes().get(index));
+                index += 1;
+            }
+        }
+        ast.setFunction(function);
         return null;
     }
 
