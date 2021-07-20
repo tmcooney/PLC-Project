@@ -1,6 +1,5 @@
 package plc.project;
 
-
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -38,7 +37,6 @@ public final class Analyzer implements Ast.Visitor<Void> {
             visit(method);
         }
         requireAssignable(Environment.Type.INTEGER, scope.lookupFunction("main", 0).getReturnType());
-
         return null;
     }
 
@@ -51,6 +49,7 @@ public final class Analyzer implements Ast.Visitor<Void> {
             visit(ast.getValue().get());
         }
         ast.setVariable(scope.defineVariable(ast.getName(), ast.getName(), scope.lookupVariable(ast.getName()).getType(), Environment.NIL));
+
         return null;
     }
 
@@ -238,7 +237,7 @@ public final class Analyzer implements Ast.Visitor<Void> {
     public Void visit(Ast.Stmt.Return ast)  // TODO
     {
         visit(ast.getValue());
-        System.out.println(ast.getValue().getType());
+
         return null;
     }
 
@@ -295,6 +294,7 @@ public final class Analyzer implements Ast.Visitor<Void> {
     @Override
     public Void visit(Ast.Expr.Group ast)
     {
+        visit(ast.getExpression());
         if (ast.getExpression() instanceof Ast.Expr.Binary)
         {
             ast.setType(ast.getExpression().getType());
