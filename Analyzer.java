@@ -114,28 +114,35 @@ public final class Analyzer implements Ast.Visitor<Void> {
     }
 
     @Override
-    public Void visit(Ast.Stmt.Declaration ast)
+    public Void visit(Ast.Stmt.Declaration ast) // from lecture
     {
+        if(!ast.getTypeName().isPresent() && !ast.getValue().isPresent())
+        {
+            throw new RuntimeException("Declaration must have type or value to infer type.");
+        }
+
+        Environment.Type type = null;
+
         if (ast.getTypeName().isPresent())
         {
-            if (ast.getValue().isPresent())
-            {
-                visit(ast.getValue().get());
-                requireAssignable(Environment.getType(ast.getTypeName().get()), ast.getValue().get().getType());
-            }
-            ast.setVariable(scope.defineVariable(ast.getName(), ast.getName(), Environment.getType(ast.getTypeName().get()), Environment.NIL));
-            return null;
+            type = Environment.getType(ast.getTypeName().get());
         }
-        else if (ast.getValue().isPresent())
+
+        if (ast.getValue().isPresent())
         {
             visit(ast.getValue().get());
-            ast.setVariable(scope.defineVariable(ast.getName(), ast.getName(), ast.getValue().get().getType(), Environment.NIL));
-            return null;
+
+            //if (!ast.getTypeName().isPresent())
+            if (type == null)
+            {
+                type = ast.getValue().get().getType();
+            }
+            requireAssignable(type, ast.getValue().get().getType());
         }
-        else
-        {
-            throw new RuntimeException();
-        }
+
+        ast.setVariable(scope.defineVariable(ast.getName(), ast.getName(), type, Environment.NIL));
+
+        return null;
     }
 
     @Override
