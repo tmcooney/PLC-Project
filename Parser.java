@@ -1,6 +1,5 @@
 package plc.project;
 
-
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -79,6 +78,10 @@ public final class Parser {
                     return new Ast.Field(name, typeName, Optional.empty());
                     //return new Ast.Field(name, Optional.empty()); // old return
                 }
+            }
+            if (match(";"))
+            {
+                throw new ParseException("no type or value", tokens.get(-1).getIndex());
             }
         }
         throw new ParseException("invalid field", tokens.get(1).getIndex());
