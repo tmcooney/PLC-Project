@@ -45,11 +45,13 @@ public final class Analyzer implements Ast.Visitor<Void> {
     {
         if (ast.getValue().isPresent())
         {
-            requireAssignable(ast.getVariable().getType(), ast.getValue().get().getType());
             visit(ast.getValue().get());
+            requireAssignable(scope.lookupVariable(ast.getName()).getType(), ast.getValue().get().getType());
+            ast.setVariable(scope.defineVariable(ast.getName(), ast.getName(), scope.lookupVariable(ast.getName()).getType(), Environment.NIL));
+            return null;
         }
-        ast.setVariable(scope.defineVariable(ast.getName(), ast.getName(), scope.lookupVariable(ast.getName()).getType(), Environment.NIL));
 
+        ast.setVariable(scope.defineVariable(ast.getName(), ast.getName(), scope.lookupVariable(ast.getName()).getType(), Environment.NIL));
         return null;
     }
 
