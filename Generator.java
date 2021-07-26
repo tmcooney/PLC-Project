@@ -53,9 +53,19 @@ public final class Generator implements Ast.Visitor<Void> {
     }
 
     @Override
-    public Void visit(Ast.Stmt.Declaration ast) {
-        throw new UnsupportedOperationException(); //TODO
-        //return null;
+    public Void visit(Ast.Stmt.Declaration ast) // from lecture
+    {
+
+        print(ast.getVariable().getType().getJvmName(),
+                " ",
+                ast.getVariable().getJvmName());
+
+        if (ast.getValue().isPresent()){
+            print(" = ", ast.getValue().get());
+        }
+        print(";");
+
+        return null;
     }
 
     @Override
@@ -77,9 +87,23 @@ public final class Generator implements Ast.Visitor<Void> {
     }
 
     @Override
-    public Void visit(Ast.Stmt.While ast) {
-        throw new UnsupportedOperationException(); //TODO
-        //return null;
+    public Void visit(Ast.Stmt.While ast) // from lecture
+    {
+        print("while (", ast.getCondition(), ") {");
+
+        if (!ast.getStatements().isEmpty()){
+            newline(++indent);
+            for (int i = 0; i < ast.getStatements().size(); i++){
+                if (i != 0){
+                    newline(indent);
+                }
+                print(ast.getStatements().get(i));
+            }
+            newline(--indent);
+        }
+
+        print("}");
+        return null;
     }
 
     @Override
