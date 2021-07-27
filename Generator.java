@@ -107,13 +107,37 @@ public final class Generator implements Ast.Visitor<Void> {
             newline(--indent);
             print("}");
         }
+        //Ast.Stmt.For forStmt = new Ast.Stmt.For("name", ast.getCondition(), null); // FIXME delete this
+        //visit(forStmt); // FIXME delete this too
         return null;
     }
 
     @Override
-    public Void visit(Ast.Stmt.For ast) { //TODO
-        print("for (");
-        System.out.println(ast.getValue());
+    public Void visit(Ast.Stmt.For ast) //TODO
+    {
+
+        print("for (",
+                ast.getValue().getType().getJvmName(),
+                " ",
+                ast.getName(),
+                " : ",
+                ast.getValue(),
+                ") {");
+
+        if (!ast.getStatements().isEmpty())
+        {
+            newline(++indent);
+            for (int i = 0; i < ast.getStatements().size(); i++){
+                if (i != 0){
+                    newline(indent);
+                }
+                print(ast.getStatements().get(i));
+            }
+            newline(--indent);
+        }
+
+        print("}");
+
         return null;
     }
 
