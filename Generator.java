@@ -71,16 +71,43 @@ public final class Generator implements Ast.Visitor<Void> {
     }
 
     @Override
-    public Void visit(Ast.Stmt.Assignment ast) {
+    public Void visit(Ast.Stmt.Assignment ast)
+    {
 
         print(ast.getReceiver(), " = ", ast.getValue(), ";");
         return null;
     }
 
     @Override
-    public Void visit(Ast.Stmt.If ast) {
-        throw new UnsupportedOperationException(); //TODO
-        //return null;
+    public Void visit(Ast.Stmt.If ast)
+    {
+        print("if (", ast.getCondition(), ") {");
+        if (!ast.getThenStatements().isEmpty())
+        {
+            newline(++indent);
+            for (int i = 0; i < ast.getThenStatements().size(); i++){
+                if (i != 0){
+                    newline(indent);
+                }
+                print(ast.getThenStatements().get(i));
+            }
+            newline(--indent);
+        }
+        print("}");
+        if (!ast.getElseStatements().isEmpty())
+        {
+            print("else {");
+            newline(++indent);
+            for (int i = 0; i < ast.getElseStatements().size(); i++){
+                if (i != 0){
+                    newline(indent);
+                }
+                print(ast.getElseStatements().get(i));
+            }
+            newline(--indent);
+            print("}");
+        }
+        return null;
     }
 
     @Override
@@ -166,7 +193,8 @@ public final class Generator implements Ast.Visitor<Void> {
     }
 
     @Override
-    public Void visit(Ast.Expr.Access ast) {
+    public Void visit(Ast.Expr.Access ast)
+    {
         if (ast.getReceiver().isPresent())
         {
             print(ast.getReceiver(), ".");
