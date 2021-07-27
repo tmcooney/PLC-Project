@@ -113,7 +113,7 @@ public final class Generator implements Ast.Visitor<Void> {
     }
 
     @Override
-    public Void visit(Ast.Stmt.For ast) //TODO
+    public Void visit(Ast.Stmt.For ast)
     {
 
         print("for (",
@@ -229,9 +229,24 @@ public final class Generator implements Ast.Visitor<Void> {
     }
 
     @Override
-    public Void visit(Ast.Expr.Function ast) {
-        throw new UnsupportedOperationException(); //TODO
-        //return null;
+    public Void visit(Ast.Expr.Function ast)
+    {
+        if (ast.getReceiver().isPresent())
+        {
+            print(ast.getReceiver().get(), ".");
+        }
+
+        print(ast.getFunction().getJvmName(), "(");
+        for (int i = 0; i < ast.getArguments().size(); i++)
+        {
+            print(ast.getArguments().get(i));
+            if (!(i == ast.getArguments().size() - 1))
+            {
+                print(", ");
+            }
+        }
+        print(")");
+        return null;
     }
 
 }
