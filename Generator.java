@@ -47,7 +47,8 @@ public final class Generator implements Ast.Visitor<Void> {
     }
 
     @Override
-    public Void visit(Ast.Stmt.Expression ast) {
+    public Void visit(Ast.Stmt.Expression ast)
+    {
         print(ast.getExpression(), ";");
         return null;
     }
@@ -70,8 +71,9 @@ public final class Generator implements Ast.Visitor<Void> {
 
     @Override
     public Void visit(Ast.Stmt.Assignment ast) {
-        throw new UnsupportedOperationException(); //TODO
-        //return null;
+
+        print(ast.getReceiver(), " = ", ast.getValue(), ";");
+        return null;
     }
 
     @Override
