@@ -148,11 +148,20 @@ public final class Generator implements Ast.Visitor<Void> {
     @Override
     public Void visit(Ast.Expr.Binary ast)
     {
-        print(ast.getLeft(),
-                " ",
-                ast.getOperator(),
-                " ",
-                ast.getRight());
+        print(ast.getLeft(), " ");
+        if (ast.getOperator().equals("AND"))
+        {
+            print("&&");
+        }
+        else if (ast.getOperator().equals("OR"))
+        {
+            print("||");
+        }
+        else
+        {
+            print(ast.getOperator());
+        }
+        print(" ", ast.getRight());
         return null;
     }
 
