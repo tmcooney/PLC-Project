@@ -139,14 +139,20 @@ public final class Generator implements Ast.Visitor<Void> {
 
     @Override
     public Void visit(Ast.Expr.Group ast) {
-        print("(", ast.getExpression(), ")");
+        print("(",
+                ast.getExpression(),
+                ")");
         return null;
     }
 
     @Override
     public Void visit(Ast.Expr.Binary ast) {
-        throw new UnsupportedOperationException(); //TODO
-        //return null;
+        print(ast.getLeft(),
+                " ",
+                ast.getOperator(),
+                " ",
+                ast.getRight());
+        return null;
     }
 
     @Override
