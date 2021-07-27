@@ -96,7 +96,7 @@ public final class Generator implements Ast.Visitor<Void> {
         print("}");
         if (!ast.getElseStatements().isEmpty())
         {
-            print("else {");
+            print(" else {");
             newline(++indent);
             for (int i = 0; i < ast.getElseStatements().size(); i++){
                 if (i != 0){
@@ -111,9 +111,10 @@ public final class Generator implements Ast.Visitor<Void> {
     }
 
     @Override
-    public Void visit(Ast.Stmt.For ast) {
-        throw new UnsupportedOperationException(); //TODO
-        //return null;
+    public Void visit(Ast.Stmt.For ast) { //TODO
+        print("for (");
+        System.out.println(ast.getValue());
+        return null;
     }
 
     @Override
