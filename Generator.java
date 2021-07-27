@@ -163,8 +163,8 @@ public final class Generator implements Ast.Visitor<Void> {
 
     @Override
     public Void visit(Ast.Stmt.Return ast) {
-        throw new UnsupportedOperationException(); //TODO
-        //return null;
+        print("return ", ast.getValue(), ";");
+        return null;
     }
 
     @Override
