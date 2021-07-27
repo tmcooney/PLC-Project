@@ -1,6 +1,7 @@
 package plc.project;
 
 import java.io.PrintWriter;
+import java.math.BigDecimal;
 
 public final class Generator implements Ast.Visitor<Void> {
 
@@ -115,15 +116,31 @@ public final class Generator implements Ast.Visitor<Void> {
     }
 
     @Override
-    public Void visit(Ast.Expr.Literal ast) {
-        throw new UnsupportedOperationException(); //TODO
-        //return null;
+    public Void visit(Ast.Expr.Literal ast) { //TODO
+
+        if (ast.getLiteral() instanceof String)
+        {
+            print("\"", ast.getLiteral(), "\"");
+            return null;
+        }
+        if (ast.getLiteral() instanceof Character)
+        {
+            print("\'", ast.getLiteral(), "\'");
+            return null;
+        }
+        if (ast.getLiteral() instanceof BigDecimal) // FIXME use BigDecimal(String) constructor to know what precision is
+        {
+            print(ast.getLiteral());
+            return null;
+        }
+        print(ast.getLiteral());
+        return null;
     }
 
     @Override
     public Void visit(Ast.Expr.Group ast) {
-        throw new UnsupportedOperationException(); //TODO
-        //return null;
+        print("(", ast.getExpression(), ")");
+        return null;
     }
 
     @Override
