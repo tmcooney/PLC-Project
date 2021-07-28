@@ -32,14 +32,42 @@ public final class Generator implements Ast.Visitor<Void> {
 
     @Override
     public Void visit(Ast.Source ast) {
-        Ast.Method method = new Ast.Method("null", Arrays.asList(), Arrays.asList());
-        visit(method);
-        throw new UnsupportedOperationException(); //TODO
-        //return null;
+        print("public class Main {");
+        newline(0);
+        if (!ast.getFields().isEmpty())
+        {
+            for (int i = 0; i < ast.getFields().size(); i++)
+            {
+                newline(indent);
+                print(ast.getFields().get(i));
+            }
+            newline(0);
+        }
+
+        newline(++indent);
+        print("public static void main(String[] args) {");
+        newline(++indent);
+        print("System.exit(new Main().main());");
+        newline(--indent);
+        print("}");
+        newline(0);
+
+        for (int i = 0; i < ast.getMethods().size(); i++)
+        {
+            newline(indent);
+            print(ast.getMethods().get(i));
+        }
+
+        newline(--indent);
+        newline(0);
+        print("}");
+
+        return null;
     }
 
     @Override
-    public Void visit(Ast.Field ast) {
+    public Void visit(Ast.Field ast)
+    {
         print(ast.getVariable().getType().getJvmName(),
                 " ",
                 ast.getVariable().getJvmName());
@@ -53,7 +81,8 @@ public final class Generator implements Ast.Visitor<Void> {
     }
 
     @Override
-    public Void visit(Ast.Method ast) {
+    public Void visit(Ast.Method ast)
+    {
         System.out.println();
         print(ast.getFunction().getReturnType().getJvmName(), " ", ast.getName(), "(");
         for (int i = 0; i < ast.getParameters().size(); i++)
@@ -78,9 +107,7 @@ public final class Generator implements Ast.Visitor<Void> {
         }
         print("}");
 
-
-        throw new UnsupportedOperationException(); //TODO
-        //return null;
+        return null;
     }
 
     @Override
