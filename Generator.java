@@ -2,6 +2,7 @@ package plc.project;
 
 import java.io.PrintWriter;
 import java.math.BigDecimal;
+import java.util.Arrays;
 
 public final class Generator implements Ast.Visitor<Void> {
 
@@ -31,18 +32,53 @@ public final class Generator implements Ast.Visitor<Void> {
 
     @Override
     public Void visit(Ast.Source ast) {
+        Ast.Method method = new Ast.Method("null", Arrays.asList(), Arrays.asList());
+        visit(method);
         throw new UnsupportedOperationException(); //TODO
         //return null;
     }
 
     @Override
     public Void visit(Ast.Field ast) {
-        throw new UnsupportedOperationException(); //TODO
-        //return null;
+        print(ast.getVariable().getType().getJvmName(),
+                " ",
+                ast.getVariable().getJvmName());
+
+        if (ast.getValue().isPresent()){
+            print(" = ", ast.getValue().get());
+        }
+        print(";");
+
+        return null;
     }
 
     @Override
     public Void visit(Ast.Method ast) {
+        System.out.println();
+        print(ast.getFunction().getReturnType().getJvmName(), " ", ast.getName(), "(");
+        for (int i = 0; i < ast.getParameters().size(); i++)
+        {
+            print(ast.getParameterTypeNames().get(i), ": ", ast.getParameters().get(i));
+            if (!(i == ast.getParameters().size() - 1))
+            {
+                print(", ");
+            }
+        }
+        print(") {");
+        if (!ast.getStatements().isEmpty())
+        {
+            newline(++indent);
+            for (int i = 0; i < ast.getStatements().size(); i++){
+                if (i != 0){
+                    newline(indent);
+                }
+                print(ast.getStatements().get(i));
+            }
+            newline(--indent);
+        }
+        print("}");
+
+
         throw new UnsupportedOperationException(); //TODO
         //return null;
     }
@@ -162,13 +198,15 @@ public final class Generator implements Ast.Visitor<Void> {
     }
 
     @Override
-    public Void visit(Ast.Stmt.Return ast) {
+    public Void visit(Ast.Stmt.Return ast)
+    {
         print("return ", ast.getValue(), ";");
         return null;
     }
 
     @Override
-    public Void visit(Ast.Expr.Literal ast) { //TODO
+    public Void visit(Ast.Expr.Literal ast)
+    { //TODO
 
         if (ast.getLiteral() instanceof String)
         {
@@ -190,7 +228,8 @@ public final class Generator implements Ast.Visitor<Void> {
     }
 
     @Override
-    public Void visit(Ast.Expr.Group ast) {
+    public Void visit(Ast.Expr.Group ast)
+    {
         print("(",
                 ast.getExpression(),
                 ")");
