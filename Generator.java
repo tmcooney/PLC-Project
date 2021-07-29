@@ -286,9 +286,10 @@ public final class Generator implements Ast.Visitor<Void> {
     @Override
     public Void visit(Ast.Expr.Access ast)
     {
+
         if (ast.getReceiver().isPresent())
         {
-            print(ast.getReceiver(), ".");
+            print(ast.getReceiver().get(), ".");
         }
         print(ast.getName());
         return null;
