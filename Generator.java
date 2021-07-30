@@ -36,15 +36,14 @@ public final class Generator implements Ast.Visitor<Void> {
         newline(0);
         if (!ast.getFields().isEmpty())
         {
-            indent++;
+            ++indent;
             for (int i = 0; i < ast.getFields().size(); i++)
             {
                 newline(indent);
                 print(ast.getFields().get(i));
             }
             newline(0);
-            indent--;
-
+            --indent;
         }
 
         newline(++indent);
