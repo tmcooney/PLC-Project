@@ -70,9 +70,7 @@ public final class Generator implements Ast.Visitor<Void> {
     @Override
     public Void visit(Ast.Field ast)
     {
-        print(ast.getVariable().getType().getJvmName(),
-                " ",
-                ast.getVariable().getJvmName());
+        print(ast.getVariable().getType().getJvmName(), " ", ast.getVariable().getJvmName());
 
         if (ast.getValue().isPresent()){
             print(" = ", ast.getValue().get());
@@ -182,8 +180,7 @@ public final class Generator implements Ast.Visitor<Void> {
     public Void visit(Ast.Stmt.For ast)
     {
 
-        print("for (",
-                "int ",
+        print("for (int ",
                 ast.getName(),
                 " : ",
                 ast.getValue(),
@@ -236,7 +233,7 @@ public final class Generator implements Ast.Visitor<Void> {
 
     @Override
     public Void visit(Ast.Expr.Literal ast)
-    { //TODO
+    {
 
         if (ast.getLiteral() instanceof String)
         {
@@ -246,11 +243,6 @@ public final class Generator implements Ast.Visitor<Void> {
         if (ast.getLiteral() instanceof Character)
         {
             print("\'", ast.getLiteral(), "\'");
-            return null;
-        }
-        if (ast.getLiteral() instanceof BigDecimal) // FIXME use BigDecimal(String) constructor to know what precision is
-        {
-            print(ast.getLiteral());
             return null;
         }
         print(ast.getLiteral());
@@ -289,12 +281,12 @@ public final class Generator implements Ast.Visitor<Void> {
     @Override
     public Void visit(Ast.Expr.Access ast)
     {
-
+        //System.out.println(ast.getVariable().getJvmName());
         if (ast.getReceiver().isPresent())
         {
             print(ast.getReceiver().get(), ".");
         }
-        print(ast.getName());
+        print(ast.getVariable().getJvmName());
         return null;
     }
 
