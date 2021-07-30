@@ -67,9 +67,6 @@ public final class Generator implements Ast.Visitor<Void> {
         return null;
     }
 
-
-
-
     @Override
     public Void visit(Ast.Field ast)
     {
@@ -82,17 +79,17 @@ public final class Generator implements Ast.Visitor<Void> {
         }
         print(";");
 
+
         return null;
     }
 
     @Override
     public Void visit(Ast.Method ast)
     {
-        System.out.println();
         print(ast.getFunction().getReturnType().getJvmName(), " ", ast.getName(), "(");
         for (int i = 0; i < ast.getParameters().size(); i++)
         {
-            print(ast.getParameterTypeNames().get(i), ": ", ast.getParameters().get(i));
+            print(Environment.getType(ast.getParameterTypeNames().get(i)).getJvmName(), " ", ast.getParameters().get(i));
             if (!(i == ast.getParameters().size() - 1))
             {
                 print(", ");
