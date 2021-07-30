@@ -2,7 +2,7 @@ package plc.project;
 
 import java.io.PrintWriter;
 import java.math.BigDecimal;
-import java.util.Arrays;
+
 
 public final class Generator implements Ast.Visitor<Void> {
 
@@ -36,12 +36,15 @@ public final class Generator implements Ast.Visitor<Void> {
         newline(0);
         if (!ast.getFields().isEmpty())
         {
+            indent++;
             for (int i = 0; i < ast.getFields().size(); i++)
             {
                 newline(indent);
                 print(ast.getFields().get(i));
             }
             newline(0);
+            indent--;
+
         }
 
         newline(++indent);
@@ -64,6 +67,9 @@ public final class Generator implements Ast.Visitor<Void> {
 
         return null;
     }
+
+
+
 
     @Override
     public Void visit(Ast.Field ast)
@@ -116,6 +122,7 @@ public final class Generator implements Ast.Visitor<Void> {
         print(ast.getExpression(), ";");
         return null;
     }
+
 
     @Override
     public Void visit(Ast.Stmt.Declaration ast) // from lecture
@@ -190,6 +197,7 @@ public final class Generator implements Ast.Visitor<Void> {
         if (!ast.getStatements().isEmpty())
         {
             newline(++indent);
+
             for (int i = 0; i < ast.getStatements().size(); i++){
                 if (i != 0){
                     newline(indent);
