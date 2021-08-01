@@ -58,10 +58,9 @@ public final class Generator implements Ast.Visitor<Void> {
         {
             newline(indent);
             print(ast.getMethods().get(i));
+            newline(0);
         }
-
         newline(--indent);
-        newline(0);
         print("}");
 
         return null;
@@ -281,7 +280,7 @@ public final class Generator implements Ast.Visitor<Void> {
     @Override
     public Void visit(Ast.Expr.Access ast)
     {
-        //System.out.println(ast.getVariable().getJvmName());
+
         if (ast.getReceiver().isPresent())
         {
             print(ast.getReceiver().get(), ".");
