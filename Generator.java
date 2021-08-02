@@ -1,7 +1,7 @@
 package plc.project;
 
 import java.io.PrintWriter;
-import java.math.BigDecimal;
+
 
 
 public final class Generator implements Ast.Visitor<Void> {
@@ -233,7 +233,11 @@ public final class Generator implements Ast.Visitor<Void> {
     @Override
     public Void visit(Ast.Expr.Literal ast)
     {
-
+        if (ast.getLiteral().equals(Environment.NIL))
+        {
+            print("null");
+            return null;
+        }
         if (ast.getLiteral() instanceof String)
         {
             print("\"", ast.getLiteral(), "\"");
