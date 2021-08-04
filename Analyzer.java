@@ -370,16 +370,11 @@ public final class Analyzer implements Ast.Visitor<Void> {
                 ast.setType(Environment.Type.INTEGER);
                 return null;
             }
-            if (ast.getLeft().getType().equals(Environment.Type.DECIMAL) || ast.getRight().getType().equals(Environment.Type.DECIMAL))
+            if (ast.getLeft().getType().equals(Environment.Type.DECIMAL) && ast.getRight().getType().equals(Environment.Type.DECIMAL))
             {
                 ast.setType(Environment.Type.DECIMAL);
                 return null;
             }
-        }
-        //if (ast.getLeft().getType().equals(Environment.Type.ANY) || ast.getRight().getType().equals(Environment.Type.ANY))
-        {
-            //ast.setType(Environment.Type.ANY);
-            //return null;
         }
         throw new RuntimeException();
     }
