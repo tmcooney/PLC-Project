@@ -71,7 +71,6 @@ public final class Analyzer implements Ast.Visitor<Void> {
         else //return type is present
         {
             returnType = Environment.getType(ast.getReturnTypeName().get());
-
         }
         ast.setFunction(scope.defineFunction(ast.getName(), ast.getName(), typeNames, returnType, args -> Environment.NIL));
         try
@@ -335,8 +334,9 @@ public final class Analyzer implements Ast.Visitor<Void> {
                 || operator.equals("==")
                 || operator.equals("!="))
         {
-            if (ast.getLeft().getType().equals(Environment.Type.COMPARABLE) && ast.getRight().getType().equals(Environment.Type.COMPARABLE))
+            if (ast.getLeft().getType().equals(ast.getRight().getType()))
             {
+                requireAssignable(Environment.Type.COMPARABLE, ast.getLeft().getType());
                 ast.setType(Environment.Type.BOOLEAN);
                 return null;
             }
