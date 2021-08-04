@@ -5,6 +5,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -46,12 +47,9 @@ public final class Analyzer implements Ast.Visitor<Void> {
         if (ast.getValue().isPresent())
         {
             visit(ast.getValue().get());
-            requireAssignable(scope.lookupVariable(ast.getName()).getType(), ast.getValue().get().getType());
-            ast.setVariable(scope.defineVariable(ast.getName(), ast.getName(), scope.lookupVariable(ast.getName()).getType(), Environment.NIL));
-            return null;
+            requireAssignable(Environment.getType(ast.getTypeName()), ast.getValue().get().getType());
         }
-
-        ast.setVariable(scope.defineVariable(ast.getName(), ast.getName(), scope.lookupVariable(ast.getName()).getType(), Environment.NIL));
+        ast.setVariable(scope.defineVariable(ast.getName(), ast.getName(), Environment.getType(ast.getTypeName()), Environment.NIL));
         return null;
     }
 
@@ -243,10 +241,9 @@ public final class Analyzer implements Ast.Visitor<Void> {
     }
 
     @Override
-    public Void visit(Ast.Stmt.Return ast)  // TODO
+    public Void visit(Ast.Stmt.Return ast)
     {
         visit(ast.getValue());
-
         return null;
     }
 
