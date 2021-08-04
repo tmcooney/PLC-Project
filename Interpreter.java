@@ -88,6 +88,7 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
     {
         if (ast.getExpression() instanceof Ast.Expr.Function)
         {
+
             if (((Ast.Expr.Function) ast.getExpression()).getName().equals("print"))
             {
                 List<Ast.Expr> list = (((Ast.Expr.Function) ast.getExpression()).getArguments());
@@ -249,16 +250,24 @@ public class Interpreter implements Ast.Visitor<Environment.PlcObject>
         switch (ast.getOperator())
         {
             case "AND":
-                if (requireType(Boolean.class, visit(ast.getLeft()))) //LHS must be bool
+
+                if (visit(ast.getLeft()).getValue().equals(true) || visit(ast.getLeft()).getValue().equals(false)) //LHS must be bool
                 {
+                    if (visit(ast.getLeft()).getValue().equals(false))
+                    {
+                        return Environment.create(false);
+                    }
                     if (visit(ast.getLeft()).getValue().equals(true)) //if the left operand is true
                     {
                         if (visit(ast.getRight()).getValue().equals(true))
                         {
                             return Environment.create(true);
                         }
+                        else
+                        {
+                            return Environment.create(false);
+                        }
                     }
-                    return Environment.create(false);
                 }
                 throw new RuntimeException();
 
